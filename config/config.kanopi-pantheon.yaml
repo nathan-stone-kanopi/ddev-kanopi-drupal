@@ -1,0 +1,37 @@
+# Kanopi Pantheon Add-on Configuration
+# 
+# This file provides default web environment variables for Kanopi's
+# Pantheon-based Drupal development workflow.
+#
+# These variables can be overridden in your project's .ddev/config.yaml
+# if needed for project-specific customization.
+
+web_environment:
+  # Theme development variables
+  # Update THEME to match your custom theme path
+  - THEME=themes/custom/arbor
+  - THEMENAME=arbor
+  
+  # Pantheon hosting variables  
+  # These are used by various commands for environment detection
+  - hostingsite=your-pantheon-site
+  - hostingenv=dev
+  
+  # Migration source variables
+  # Update these if you're migrating from another Pantheon site
+  - MIGRATE_DB_SOURCE=pantheon_source_project
+  - MIGRATE_DB_ENV=live
+
+# PHP version optimized for Drupal 11 and Pantheon
+php_version: "8.3"
+
+# Database version matching Pantheon
+database:
+  type: mariadb  
+  version: "10.11"
+
+# Enable corepack for modern Node.js package management
+corepack_enable: true
+
+# Web server optimized for Drupal
+webserver_type: nginx-fpm

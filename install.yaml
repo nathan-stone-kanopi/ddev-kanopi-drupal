@@ -1,0 +1,46 @@
+name: ddev-kanopi-pantheon-drupal
+
+# Based on https://github.com/ddev/ddev/blob/HEAD/pkg/ddevapp/addons.go#L61
+project_files:
+- commands/
+- providers/
+- config/
+
+# DDEV version constraint 
+ddev_version_constraint: ">= v1.22.0"
+
+# Pre-install actions
+pre_install_actions:
+# Create the addon directory
+- |
+  #ddev-nodisplay
+  #ddev-description:Installing Kanopi Pantheon Drupal Add-on
+
+# Post-install actions  
+post_install_actions:
+# Explain the installed components
+- |
+  echo ""
+  echo "✅ Kanopi Pantheon Drupal Add-on installed successfully!"
+  echo ""
+  echo "📦 Installed components:"
+  echo "   • Enhanced Pantheon provider with smart backup management"
+  echo "   • 17 custom commands for Drupal development workflow"
+  echo "   • Theme development tools with Node.js/NPM support"
+  echo "   • Cypress testing integration"
+  echo "   • Drupal Recipe support"
+  echo "   • Migration and backup utilities"
+  echo ""
+  echo "🔧 Next steps:"
+  echo "   1. Set your Pantheon machine token:"
+  echo "      ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here"
+  echo "   2. Configure your Pantheon project in .ddev/providers/pantheon.yaml"
+  echo "   3. Run 'ddev restart' to apply changes"
+  echo ""
+  echo "📚 Run 'ddev help' to see available commands"
+  echo ""
+
+removal_action:
+# Note what's being removed
+- |
+  echo "Removing Kanopi Pantheon Drupal Add-on..."

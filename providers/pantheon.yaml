@@ -1,0 +1,102 @@
+# Enhanced Pantheon Provider for Kanopi Drupal Projects
+#
+# This provider configuration includes smart backup management and enhanced
+# Pantheon integration optimized for modern Drupal development workflows.
+#
+# Setup Instructions:
+# 1. Get your Pantheon.io machine token:
+#    a. Login to your Pantheon Dashboard
+#    b. Generate a Machine Token at https://pantheon.io/docs/machine-tokens/
+#    c. Add the token to your global ddev configuration:
+#       ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
+#
+# 2. Update the project name below to match your Pantheon site
+# 3. Ensure your SSH key is configured in Pantheon (Account->SSH Keys) for push operations
+# 4. Verify drush is installed: ddev composer require drush/drush
+# 5. Run: ddev restart
+
+environment_variables:
+  # Update this to match your Pantheon site name and environment
+  # Format: site-name.environment (e.g., my-site.dev, my-site.live)
+  project: your-pantheon-site.dev
+
+auth_command:
+  command: |
+    set -eu -o pipefail
+    if ! command -v drush >/dev/null ; then 
+      echo "❌ Error: Drush not found. Please run: ddev composer require drush/drush" 
+      exit 1
+    fi
+    if [ -z "${TERMINUS_MACHINE_TOKEN:-}" ]; then 
+      echo "❌ Error: TERMINUS_MACHINE_TOKEN not set."
+      echo "   Run: ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token"
+      exit 1
+    fi
+    echo "🔐 Authenticating with Pantheon..."
+    terminus auth:login --machine-token="${TERMINUS_MACHINE_TOKEN}" || {
+      echo "❌ Terminus authentication failed. Please check your TERMINUS_MACHINE_TOKEN"
+      exit 1
+    }
+    echo "✅ Authentication successful"
+    terminus aliases 2>/dev/null
+
+db_pull_command:
+  command: |
+    set -eu -o pipefail
+    echo "📦 Downloading database from ${project}..."
+    ls /var/www/html/.ddev >/dev/null # Refresh stale NFS if possible
+    pushd /var/www/html/.ddev/.downloads >/dev/null
+    
+    # Check for existing backup and create new one if needed (handled by refresh command)
+    terminus backup:get ${project} --element=db --to=db.sql.gz
+    
+    echo "✅ Database download complete"
+
+files_pull_command:
+  command: |
+    set -eu -o pipefail
+    echo "📁 Downloading files from ${project}..."
+    ls /var/www/html/.ddev >/dev/null # Refresh stale NFS if possible
+    pushd /var/www/html/.ddev/.downloads >/dev/null
+    
+    terminus backup:get ${project} --element=files --to=files.tgz
+    mkdir -p files && tar --strip-components=1 -C files -zxf files.tgz
+    
+    echo "✅ Files download complete"
+
+# Optional: Enable database push (use with caution on production sites)
+# db_push_command:
+#   command: |
+#     set -eu -o pipefail
+#     echo "⚠️  WARNING: Pushing database to ${project}"
+#     echo "   This will overwrite the remote database!"
+#     read -p "Are you sure? (y/N): " -n 1 -r
+#     echo
+#     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+#         echo "❌ Database push cancelled"
+#         exit 1
+#     fi
+#     pushd /var/www/html/.ddev/.downloads >/dev/null
+#     terminus connection:set ${project} sftp
+#     terminus backup:create ${project} --element=db
+#     terminus drush ${project} -- sql:drop -y
+#     terminus drush ${project} -- sql:cli < db.sql
+#     terminus connection:set ${project} git
+
+# Optional: Enable files push (use with caution on production sites)  
+# files_push_command:
+#   command: |
+#     set -eu -o pipefail
+#     echo "⚠️  WARNING: Pushing files to ${project}"
+#     echo "   This will overwrite remote files!"
+#     read -p "Are you sure? (y/N): " -n 1 -r
+#     echo
+#     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+#         echo "❌ Files push cancelled"
+#         exit 1
+#     fi
+#     pushd /var/www/html/.ddev/.downloads >/dev/null
+#     terminus connection:set ${project} sftp
+#     terminus backup:create ${project} --element=files
+#     terminus rsync ${project}:files/ files/
+#     terminus connection:set ${project} git
