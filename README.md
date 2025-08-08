@@ -82,20 +82,14 @@ Configure the add-on for your project:
      project: your-site-name.env
    ```
 
-2. **Configure Pantheon and Migration variables** in `.ddev/config.yaml`:
+2. **Configure Pantheon and Migration variables** in `.ddev/env.web`:
    ```yaml
-   web_environment:
-     # Theme development variables
-     - THEME=themes/custom/your-theme
-     - THEMENAME=your-theme
-
-     # Pantheon hosting variables
-     - hostingsite=your-pantheon-site
-     - hostingenv=dev
-
-     # Migration source variables (if migrating from another site)
-     - MIGRATE_DB_SOURCE=pantheon_source_project
-     - MIGRATE_DB_ENV=live
+THEME=themes/custom/your-theme
+THEMENAME=your-theme
+hostingsite=your-pantheon-site
+hostingenv=dev
+MIGRATE_DB_SOURCE=pantheon_source_project
+MIGRATE_DB_ENV=live
    ```
 
 3. **Restart DDEV** to apply changes:
@@ -130,7 +124,7 @@ ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
 ddev start
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
-# 5. Update variables in .ddev/config.yaml and .ddev/providers/pantheon.yaml
+# 5. Update variables in .ddev/env.web and .ddev/providers/pantheon.yaml
 
 # 6. Restart and initialize
 ddev restart
