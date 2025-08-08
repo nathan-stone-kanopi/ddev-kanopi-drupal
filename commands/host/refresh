@@ -15,7 +15,7 @@ divider='===================================================\n'
 # Parse command line arguments
 FORCE_BACKUP=false
 # Get hostingenv from web container
-ENVIRONMENT=$(ddev exec printenv hostingenv 2>/dev/null)
+ENVIRONMENT=$(ddev exec printenv HOSTINGENV 2>/dev/null)
 
 for arg in "$@"; do
   case $arg in
