@@ -5,7 +5,7 @@ project_files:
 - commands/
 - providers/
 
-# DDEV version constraint 
+# DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
 
 # Pre-install actions
@@ -15,28 +15,23 @@ pre_install_actions:
   #ddev-nodisplay
   #ddev-description:Installing Kanopi Pantheon Drupal Add-on
 
-# Post-install actions  
+# Post-install actions
 post_install_actions:
-# Add web environment variables to config.yaml if they don't exist
 - |
   #ddev-nodisplay
   CONFIG_FILE=".ddev/config.yaml"
-  if [ -f "$CONFIG_FILE" ]; then
-    # Check if web_environment section already exists
-    if ! grep -q "^web_environment:" "$CONFIG_FILE"; then
-      echo "" >> "$CONFIG_FILE"
-      echo "# Kanopi Pantheon Drupal Add-on environment variables" >> "$CONFIG_FILE"
-      echo "web_environment:" >> "$CONFIG_FILE"
-      echo "  # Theme development variables (update paths as needed)" >> "$CONFIG_FILE"
-      echo "  - THEME=themes/custom/arbor" >> "$CONFIG_FILE"
-      echo "  - THEMENAME=arbor" >> "$CONFIG_FILE"
-      echo "  # Pantheon hosting variables" >> "$CONFIG_FILE"
-      echo "  - hostingsite=your-pantheon-site" >> "$CONFIG_FILE"
-      echo "  - hostingenv=dev" >> "$CONFIG_FILE"
-      echo "  # Migration source variables (update if migrating)" >> "$CONFIG_FILE"
-      echo "  - MIGRATE_DB_SOURCE=pantheon_source_project" >> "$CONFIG_FILE"
-      echo "  - MIGRATE_DB_ENV=live" >> "$CONFIG_FILE"
-    fi
+  if command -v yq >/dev/null 2>&1; then
+    echo "🔧 Adding Kanopi Pantheon environment variables to $CONFIG_FILE"
+    yq eval '.web_environment += [
+      "THEME=themes/custom/arbor",
+      "THEMENAME=arbor",
+      "hostingsite=your-pantheon-site",
+      "hostingenv=dev",
+      "MIGRATE_DB_SOURCE=pantheon_source_project",
+      "MIGRATE_DB_ENV=live"
+    ]' -i "$CONFIG_FILE"
+  else
+    echo "⚠️ 'yq' is not installed. Skipping web_environment config."
   fi
 
 # Explain the installed components
