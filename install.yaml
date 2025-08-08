@@ -17,23 +17,7 @@ pre_install_actions:
 
 # Post-install actions
 post_install_actions:
-- |
-  #ddev-nodisplay
-  CONFIG_FILE=".ddev/config.yaml"
-  if command -v yq >/dev/null 2>&1; then
-    echo "🔧 Adding Kanopi Pantheon environment variables to $CONFIG_FILE"
-    yq eval '.web_environment += [
-      "THEME=themes/custom/arbor",
-      "THEMENAME=arbor",
-      "hostingsite=your-pantheon-site",
-      "hostingenv=dev",
-      "MIGRATE_DB_SOURCE=pantheon_source_project",
-      "MIGRATE_DB_ENV=live"
-    ]' -i "$CONFIG_FILE"
-  else
-    echo "⚠️ 'yq' is not installed. Skipping web_environment config."
-  fi
-
+- ddev dotenv set .ddev/.env.web --theme=themes/custom/themename --themename=themename --hostingsite=sitename --hostingenv=siteenv --migrate-db-source=d7sitename --migrate-db-env=d7siteenv
 # Explain the installed components
 - |
   echo ""
