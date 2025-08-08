@@ -24,35 +24,33 @@ Thank you for your interest in contributing to the DDEV Kanopi Pantheon Drupal a
 
 ```
 ddev-kanopi-pantheon-drupal/
-├── install.yaml                    # Add-on installation configuration
+├── install.yaml                   # Add-on installation configuration
 ├── README.md                      # Main documentation
 ├── CHANGELOG.md                   # Version history
 ├── CONTRIBUTING.md                # This file
 ├── LICENSE                        # MIT license
 ├── commands/                      # Custom DDEV commands
-│   ├── host/                     # Commands that run on host system
-│   │   ├── cypress               # Cypress testing
-│   │   ├── cypress-users         # Create test users
-│   │   ├── init                  # Project initialization
-│   │   ├── install-cypress       # Install Cypress
-│   │   ├── open                  # Open browser
-│   │   ├── phpmyadmin           # Database admin
-│   │   ├── rebuild              # Composer + DB refresh
-│   │   ├── refresh              # Smart DB refresh
-│   │   └── testenv              # Testing environment
-│   └── web/                      # Commands that run in web container
+│   ├── host/                      # Commands that run on host system
+│   │   ├── cypress                # Cypress testing
+│   │   ├── cypress-users          # Create test users
+│   │   ├── init                   # Project initialization
+│   │   ├── install-cypress        # Install Cypress
+│   │   ├── open                   # Open browser
+│   │   ├── phpmyadmin             # Database admin
+│   │   ├── rebuild                # Composer + DB refresh
+│   │   ├── refresh                # Smart DB refresh
+│   │   └── testenv                # Testing environment
+│   └── web/                       # Commands that run in web container
 │       ├── install-critical-tools # Critical CSS tools
-│       ├── install-theme-tools   # Theme development setup
-│       ├── migrate-prep-db       # Migration database
-│       ├── npm                   # NPM in theme directory
-│       ├── npx                   # NPX in theme directory
-│       ├── recipe-apply          # Apply Drupal recipes
-│       ├── tickle                # Keep Pantheon awake
-│       └── uuid-rm               # Clean config UUIDs
+│       ├── install-theme-tools    # Theme development setup
+│       ├── migrate-prep-db        # Migration database
+│       ├── npm                    # NPM in theme directory
+│       ├── npx                    # NPX in theme directory
+│       ├── recipe-apply           # Apply Drupal recipes
+│       ├── tickle                 # Keep Pantheon awake
+│       └── uuid-rm                # Clean config UUIDs
 ├── providers/
-│   └── pantheon.yaml            # Enhanced Pantheon provider
-└── config/
-    └── config.kanopi-pantheon.yaml # Default configuration
+    └── pantheon.yaml              # Enhanced Pantheon provider
 ```
 
 ## Adding New Commands

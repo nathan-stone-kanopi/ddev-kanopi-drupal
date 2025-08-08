@@ -72,7 +72,38 @@ ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 ddev restart
 ```
 
-#### Step 4: Complete Setup
+#### Step 4: Configuration
+
+Configure the add-on for your project:
+
+1. **Configure your Pantheon project** in `.ddev/providers/pantheon.yaml`:
+   ```yaml
+   environment_variables:
+     project: your-site-name.env
+   ```
+
+2. **Configure Pantheon and Migration variables** in `.ddev/config.yaml`:
+   ```yaml
+   web_environment:
+     # Theme development variables
+     - THEME=themes/custom/your-theme
+     - THEMENAME=your-theme
+
+     # Pantheon hosting variables
+     - hostingsite=your-pantheon-site
+     - hostingenv=dev
+
+     # Migration source variables (if migrating from another site)
+     - MIGRATE_DB_SOURCE=pantheon_source_project
+     - MIGRATE_DB_ENV=live
+   ```
+
+3. **Restart DDEV** to apply changes:
+   ```bash
+   ddev restart
+   ```
+
+#### Step 5: Complete Setup
 
 ```bash
 # Run complete initialization (installs all dependencies and tools)
@@ -99,7 +130,8 @@ ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
 ddev start
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
-# 5. Configure Pantheon project (edit .ddev/providers/pantheon.yaml)
+# 5. Update variables in .ddev/config.yaml and .ddev/providers/pantheon.yaml
+
 # 6. Restart and initialize
 ddev restart
 ddev init
@@ -108,56 +140,6 @@ ddev init
 ddev open
 ```
 
-## Configuration
-
-After installation, configure the add-on for your project:
-
-1. **Set your Pantheon machine token** (if you haven't already):
-   ```bash
-   ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
-   ```
-
-2. **Configure your Pantheon project** in `.ddev/providers/pantheon.yaml`:
-   ```yaml
-   environment_variables:
-     project: your-site-name.dev
-   ```
-
-3. **Configure Pantheon and Migration variables** in `.ddev/config/config.kanopi-pantheon.yaml`:
-   ```yaml
-   web_environment:
-     # Theme development variables
-     - THEME=themes/custom/your-theme
-     - THEMENAME=your-theme
-     
-     # Pantheon hosting variables  
-     - hostingsite=your-pantheon-site
-     - hostingenv=dev
-     
-     # Migration source variables (if migrating from another site)
-     - MIGRATE_DB_SOURCE=pantheon_source_project
-     - MIGRATE_DB_ENV=live
-   ```
-
-4. **Restart DDEV** to apply changes:
-   ```bash
-   ddev restart
-   ```
-
-5. **Project Structure After Setup**:
-   ```
-   your-project/
-   ├── .ddev/
-   │   ├── config.yaml              # Main DDEV configuration
-   │   ├── providers/
-   │   │   └── pantheon.yaml        # Pantheon integration
-   │   └── commands/                # 17 custom commands
-   │       ├── host/                # Host commands (9)
-   │       └── web/                 # Web container commands (8)
-   ├── composer.json                # Your existing Drupal project
-   ├── web/                        # Drupal docroot
-   └── config/                     # Drupal configuration
-   ```
 
 ## Available Commands
 
