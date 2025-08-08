@@ -13,11 +13,11 @@ Thank you for your interest in contributing to the DDEV Kanopi Pantheon Drupal a
 2. **Test locally**:
    ```bash
    # Install the add-on locally for testing
-   ddev get /path/to/ddev-kanopi-pantheon-drupal
+   ddev add-on get /path/to/ddev-kanopi-pantheon-drupal
    
    # Or test with an existing project
    cd your-drupal-project
-   ddev get /path/to/ddev-kanopi-pantheon-drupal
+   ddev add-on get /path/to/ddev-kanopi-pantheon-drupal
    ```
 
 ## Project Structure
@@ -96,7 +96,7 @@ set -e
 
 1. **Test installation**:
    ```bash
-   ddev get /path/to/your-modified-add-on
+   ddev add-on get /path/to/your-modified-add-on
    ```
 
 2. **Test commands**:
@@ -106,7 +106,7 @@ set -e
 
 3. **Test removal**:
    ```bash
-   ddev addon remove kanopi-pantheon-drupal
+   ddev add-on remove kanopi-pantheon-drupal
    ```
 
 ## Submitting Changes

@@ -112,20 +112,39 @@ ddev open
 
 After installation, configure the add-on for your project:
 
-1. **Configure Pantheon Project**: Edit `.ddev/providers/pantheon.yaml` and update the project name:
+1. **Set your Pantheon machine token** (if you haven't already):
+   ```bash
+   ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
+   ```
+
+2. **Configure your Pantheon project** in `.ddev/providers/pantheon.yaml`:
    ```yaml
    environment_variables:
      project: your-site-name.dev
    ```
 
-2. **Set Theme Variables** (optional): If using custom themes, configure in your project's `.ddev/config.yaml`:
+3. **Configure Pantheon and Migration variables** in `.ddev/config/config.kanopi-pantheon.yaml`:
    ```yaml
    web_environment:
+     # Theme development variables
      - THEME=themes/custom/your-theme
      - THEMENAME=your-theme
+     
+     # Pantheon hosting variables  
+     - hostingsite=your-pantheon-site
+     - hostingenv=dev
+     
+     # Migration source variables (if migrating from another site)
+     - MIGRATE_DB_SOURCE=pantheon_source_project
+     - MIGRATE_DB_ENV=live
    ```
 
-3. **Project Structure After Setup**:
+4. **Restart DDEV** to apply changes:
+   ```bash
+   ddev restart
+   ```
+
+5. **Project Structure After Setup**:
    ```
    your-project/
    ├── .ddev/
@@ -210,6 +229,26 @@ The add-on automatically configures these environment variables:
 - `hostingenv`: Current environment (dev, test, live)
 - `MIGRATE_DB_SOURCE`: Source database for migrations
 - `MIGRATE_DB_ENV`: Source environment for migrations
+
+## Managing This Add-on
+
+### View Installed Add-ons
+```bash
+# List all installed add-ons
+ddev add-on list --installed
+```
+
+### Update the Add-on
+```bash
+# Update to the latest version
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
+```
+
+### Remove the Add-on
+```bash
+# Remove the add-on completely
+ddev add-on remove kanopi-pantheon-drupal
+```
 
 ## Troubleshooting
 
