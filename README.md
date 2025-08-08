@@ -20,7 +20,7 @@ If you already have DDEV set up in your project:
 
 ```bash
 # Install the add-on
-ddev get kanopi/ddev-kanopi-pantheon-drupal
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 # Configure your Pantheon machine token globally
 ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
@@ -66,7 +66,7 @@ ddev start
 
 ```bash
 # Install the Kanopi Pantheon Drupal add-on
-ddev get kanopi/ddev-kanopi-pantheon-drupal
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 # Restart DDEV
 ddev restart
@@ -84,7 +84,7 @@ ddev open
 
 ### Quick Start Summary
 
-For the impatient developer:
+For the performant developer:
 ```bash
 # 1. Navigate to your Drupal project
 cd your-drupal-project
@@ -97,7 +97,7 @@ ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
 
 # 4. Start DDEV and add add-on
 ddev start
-ddev get kanopi/ddev-kanopi-pantheon-drupal
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 # 5. Configure Pantheon project (edit .ddev/providers/pantheon.yaml)
 # 6. Restart and initialize
