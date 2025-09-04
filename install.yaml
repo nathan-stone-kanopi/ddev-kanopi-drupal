@@ -3,21 +3,165 @@ name: ddev-kanopi-pantheon-drupal
 # Based on https://github.com/ddev/ddev/blob/HEAD/pkg/ddevapp/addons.go#L61
 project_files:
 - commands/
-- providers/
 
 # DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
 
 # Pre-install actions
 pre_install_actions:
-# Create the addon directory
+# Collect user input for configuration
 - |
-  #ddev-nodisplay
-  #ddev-description:Installing Kanopi Pantheon Drupal Add-on
+  #ddev-description:Collecting configuration for Kanopi Pantheon Drupal Add-on
+  echo ""
+  echo "🔧 Configuring Kanopi Pantheon Drupal Add-on..."
+  echo ""
+  
+  # THEME configuration
+  printf "📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): "
+  read ADDON_THEME_PATH
+  if [ -z "$ADDON_THEME_PATH" ]; then
+    ADDON_THEME_PATH="themes/custom/themename"
+    echo "⚠️  Using default theme path: $ADDON_THEME_PATH"
+  fi
+  export ADDON_THEME_PATH
+  
+  # THEMENAME configuration
+  printf "🎨 Enter your theme name (e.g., mytheme): "
+  read ADDON_THEME_NAME
+  if [ -z "$ADDON_THEME_NAME" ]; then
+    ADDON_THEME_NAME="themename"
+    echo "⚠️  Using default theme name: $ADDON_THEME_NAME"
+  fi
+  export ADDON_THEME_NAME
+  
+  # PANTHEON_SITE configuration
+  printf "🏛️  Enter your Pantheon project machine name (e.g., my-site): "
+  read ADDON_PANTHEON_SITE
+  if [ -z "$ADDON_PANTHEON_SITE" ]; then
+    echo "❌ PANTHEON_SITE is required for proper functionality"
+    exit 1
+  fi
+  export ADDON_PANTHEON_SITE
+  
+  # PANTHEON_ENV configuration
+  printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
+  read ADDON_PANTHEON_ENV
+  if [ -z "$ADDON_PANTHEON_ENV" ]; then
+    ADDON_PANTHEON_ENV="dev"
+  fi
+  export ADDON_PANTHEON_ENV
+  
+  echo ""
+  echo "Optional Migration Configuration:"
+  echo "Press Enter to skip if you don't need migration support"
+  echo ""
+  
+  # MIGRATE_DB_SOURCE configuration (optional)
+  printf "📦 Enter migration source Pantheon project name (optional): "
+  read ADDON_MIGRATE_SOURCE
+  export ADDON_MIGRATE_SOURCE
+  
+  # MIGRATE_DB_ENV configuration (optional)
+  printf "🌍 Enter migration source environment (dev/test/live) (optional): "
+  read ADDON_MIGRATE_ENV
+  export ADDON_MIGRATE_ENV
+  
+  echo ""
+  echo "✅ Configuration collected successfully"
 
 # Post-install actions
 post_install_actions:
-- ddev dotenv set .ddev/.env.web --theme=themes/custom/themename --themename=themename --hostingsite=sitename --hostingenv=siteenv --migrate-db-source=d7sitename --migrate-db-env=d7siteenv
+# Apply the collected configuration and detect Pantheon settings
+- |
+  echo ""
+  echo "⚙️  Applying configuration..."
+  
+  # Apply collected configuration values with defaults
+  ddev config --web-environment-add THEME=${ADDON_THEME_PATH:-themes/custom/themename}
+  ddev config --web-environment-add THEMENAME=${ADDON_THEME_NAME:-themename}
+  ddev config --web-environment-add PANTHEON_SITE=${ADDON_PANTHEON_SITE:-your-pantheon-site}
+  ddev config --web-environment-add PANTHEON_ENV=${ADDON_PANTHEON_ENV:-dev}
+  
+  # Apply optional migration variables if provided
+  if [ -n "${ADDON_MIGRATE_SOURCE:-}" ]; then
+    ddev config --web-environment-add MIGRATE_DB_SOURCE=${ADDON_MIGRATE_SOURCE}
+  fi
+  
+  if [ -n "${ADDON_MIGRATE_ENV:-}" ]; then
+    ddev config --web-environment-add MIGRATE_DB_ENV=${ADDON_MIGRATE_ENV}
+  fi
+  
+  echo "✅ Configuration applied successfully"
+  
+  # Search for pantheon.yml and configure versions
+  echo ""
+  echo "🔍 Searching for pantheon.yml to configure PHP and database versions..."
+  
+  PANTHEON_YML=""
+  # Search in common locations relative to project root
+  for path in "pantheon.yml" "../pantheon.yml" "../../pantheon.yml"; do
+    if [ -f "$path" ]; then
+      PANTHEON_YML="$path"
+      echo "✅ Found pantheon.yml at: $path"
+      break
+    fi
+  done
+  
+  if [ -n "$PANTHEON_YML" ]; then
+    # Extract PHP version
+    PHP_VERSION=$(grep "^php_version:" "$PANTHEON_YML" | sed 's/php_version: *//' | tr -d '"' || echo "")
+    if [ -n "$PHP_VERSION" ]; then
+      echo "🐘 Setting PHP version to: $PHP_VERSION"
+      ddev config --php-version="$PHP_VERSION"
+    fi
+    
+    # Extract database version
+    DB_VERSION=$(grep -A1 "^database:" "$PANTHEON_YML" | grep "version:" | sed 's/.*version: *//' | tr -d '"' || echo "")
+    if [ -n "$DB_VERSION" ]; then
+      echo "🗄️  Setting database version to: $DB_VERSION"
+      # Get current database version to check if change is needed
+      CURRENT_DB=$(grep -A3 "database:" .ddev/config.yaml | grep "version:" | sed 's/.*version: *//' | tr -d '"' || echo "")
+      
+      if [ "$CURRENT_DB" != "$DB_VERSION" ]; then
+        echo "📦 Changing database from $CURRENT_DB to $DB_VERSION"
+        # Stop DDEV first to allow database change
+        ddev stop
+        # Use DDEV's debug migrate-database command to handle version change
+        echo "🔄 Migrating database to version $DB_VERSION..."
+        ddev debug migrate-database "mariadb:$DB_VERSION" || {
+          echo "⚠️  Database migration failed, trying alternative approach..."
+          # Alternative: delete database and reconfigure
+          ddev delete --omit-snapshot --yes 2>/dev/null || true
+          ddev config --database="mariadb:$DB_VERSION"
+        }
+        echo "🔄 Starting DDEV with database version $DB_VERSION..."
+        ddev start
+      else
+        echo "✅ Database version $DB_VERSION already configured"
+      fi
+    fi
+    
+    echo "✅ Pantheon versions applied from pantheon.yml"
+  else
+    echo "ℹ️  No pantheon.yml found, using default versions"
+  fi
+  
+  # Set project name to match git repository name
+  echo ""
+  echo "📛 Setting project name to match repository..."
+  
+  # Get git repository name
+  if [ -d ".git" ]; then
+    REPO_NAME=$(basename "$(git rev-parse --show-toplevel)" 2>/dev/null || echo "")
+    if [ -n "$REPO_NAME" ]; then
+      echo "📦 Setting DDEV project name to: $REPO_NAME"
+      ddev config --project-name="$REPO_NAME"
+    else
+      echo "ℹ️  Could not determine git repository name"
+    fi
+  else
+    echo "ℹ️  Not in a git repository, keeping default project name"
+  fi
 # Explain the installed components
 - |
   echo ""
@@ -32,11 +176,10 @@ post_install_actions:
   echo "   • Migration and backup utilities"
   echo ""
   echo "🔧 Next steps:"
-  echo "   1. Set your Pantheon machine token (if you haven't already):"
+  echo "   1. Set your Pantheon machine token, if it's not already set:"
   echo "      ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here"
-  echo "   2. Configure your Pantheon project in .ddev/providers/pantheon.yaml"
-  echo "   3. Update environment variables in .ddev/.env.web (theme paths, site names, etc.)"
-  echo "   4. Run 'ddev restart' to apply changes"
+  echo "   2. Run 'ddev restart' to apply configuration changes"
+  echo "   3. Run 'ddev init' to complete project initialization"
   echo ""
   echo "📚 Run 'ddev help' to see available commands"
   echo ""

@@ -19,7 +19,7 @@ A comprehensive DDEV add-on that provides Kanopi's battle-tested workflow for Dr
 If you already have DDEV set up in your project:
 
 ```bash
-# Install the add-on
+# Install the add-on (includes interactive configuration)
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 # Configure your Pantheon machine token globally
@@ -65,37 +65,35 @@ ddev start
 #### Step 3: Install This Add-on
 
 ```bash
-# Install the Kanopi Pantheon Drupal add-on
+# Install the Kanopi Pantheon Drupal add-on (includes interactive configuration)
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 # Restart DDEV
 ddev restart
 ```
 
-#### Step 4: Configuration
+#### Step 4: Interactive Configuration
 
-Configure the add-on for your project:
+During installation, you'll be prompted to configure:
 
-1. **Configure your Pantheon project** in `.ddev/providers/pantheon.yaml`:
-   ```yaml
-   environment_variables:
-     project: your-site-name.env
-   ```
+1. **Theme Settings**:
+   - **THEME**: Path to your active Drupal theme (e.g., `themes/custom/mytheme`)
+   - **THEMENAME**: Your theme name (e.g., `mytheme`)
 
-2. **Configure Pantheon and Migration variables** in `.ddev/env.web`:
-   ```yaml
-THEME=themes/custom/your-theme
-THEMENAME=your-theme
-hostingsite=your-pantheon-site
-hostingenv=dev
-MIGRATE_DB_SOURCE=pantheon_source_project
-MIGRATE_DB_ENV=live
-   ```
+2. **Pantheon Settings**:
+   - **PANTHEON_SITE**: Your Pantheon project machine name (required)
+   - **PANTHEON_ENV**: Default environment for database pulls (defaults to `dev`)
 
-3. **Restart DDEV** to apply changes:
-   ```bash
-   ddev restart
-   ```
+3. **Optional Migration Settings**:
+   - **MIGRATE_DB_SOURCE**: Migration source Pantheon project (optional)
+   - **MIGRATE_DB_ENV**: Migration source environment (optional)
+
+The configuration is applied automatically during installation. You can modify these settings later using:
+```bash
+ddev config --web-environment-add THEME=path/to/your/theme
+ddev config --web-environment-add THEMENAME=your-theme-name
+# etc.
+```
 
 #### Step 5: Complete Setup
 
@@ -120,20 +118,54 @@ ddev config --project-type=drupal --docroot=web --php-version=8.3
 # 3. Add Pantheon token
 ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
 
-# 4. Start DDEV and add add-on
+# 4. Start DDEV and add add-on (includes interactive configuration)
 ddev start
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
-# 5. Update variables in .ddev/env.web and .ddev/providers/pantheon.yaml
-
-# 6. Restart and initialize
+# 5. Restart and initialize
 ddev restart
 ddev init
 
-# 7. You're ready to develop!
+# 6. You're ready to develop!
 ddev open
 ```
 
+
+## Interactive Installation
+
+During the add-on installation process, you'll be prompted to configure your project settings:
+
+```bash
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
+```
+
+**Example interaction:**
+```
+🔧 Configuring Kanopi Pantheon Drupal Add-on...
+
+📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): themes/custom/mysite
+✅ THEME set to themes/custom/mysite
+
+🎨 Enter your theme name (e.g., mytheme): mysite
+✅ THEMENAME set to mysite
+
+🏛️  Enter your Pantheon project machine name (e.g., my-site): my-production-site
+✅ PANTHEON_SITE set to my-production-site
+
+🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: live
+✅ PANTHEON_ENV set to live
+
+Optional Migration Configuration:
+Press Enter to skip if you don't need migration support
+
+📦 Enter migration source Pantheon project name (optional): old-site
+✅ MIGRATE_DB_SOURCE set to old-site
+
+🌍 Enter migration source environment (dev/test/live) (optional): live
+✅ MIGRATE_DB_ENV set to live
+```
+
+The configuration is automatically applied to your DDEV project during installation.
 
 ## Available Commands
 
@@ -254,6 +286,23 @@ ddev exec terminus site:list
 # Force new backup
 ddev refresh -f
 ```
+
+## Testing
+
+To test the add-on installation process:
+
+```bash
+# Run the automated test script
+./test-install.sh
+```
+
+The test script will:
+- Create a temporary DDEV project in `test-install/` directory
+- Test the interactive installation process with predefined values
+- Validate that environment variables are set correctly in `config.yaml`
+- Verify custom commands are available
+- Test add-on removal
+- Clean up the test environment automatically
 
 ## Contributing
 
