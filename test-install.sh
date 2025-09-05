@@ -106,22 +106,13 @@ ${TEST_MIGRATE_SOURCE}
 ${TEST_MIGRATE_ENV}
 EOF
 
-# Install the add-on with pre-set environment variables for non-interactive mode
+# Install the add-on with automated input
 printf "${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on with test configuration...${NC}\n"
-printf "${BLUE}Setting test environment variables for non-interactive installation${NC}\n"
+printf "${BLUE}Providing automated responses to installation prompts${NC}\n"
 
-# Export test values as environment variables that the install script can use
-export ADDON_THEME_PATH="$TEST_THEME"
-export ADDON_THEME_NAME="$TEST_THEMENAME"
-export ADDON_PANTHEON_SITE="$TEST_PANTHEON_SITE"
-export ADDON_PANTHEON_ENV="$TEST_PANTHEON_ENV"
-export ADDON_MIGRATE_SOURCE="$TEST_MIGRATE_SOURCE"
-export ADDON_MIGRATE_ENV="$TEST_MIGRATE_ENV"
-export ADDON_NON_INTERACTIVE="true"
-
-# Install the add-on using timeout to prevent hanging
+# Install the add-on using timeout to prevent hanging, with automated input
 printf "${YELLOW}Installing add-on with 5 minute timeout...${NC}\n"
-if timeout 300 bash -c "printf '\\n%.0s' {1..10} | ddev add-on get '$ADDON_PATH'"; then
+if timeout 300 bash -c "printf '$TEST_THEME\n$TEST_THEMENAME\n$TEST_PANTHEON_SITE\n$TEST_PANTHEON_ENV\n$TEST_MIGRATE_SOURCE\n$TEST_MIGRATE_ENV\n' | ddev add-on get '$ADDON_PATH'"; then
     printf "${GREEN}✅ Add-on installation completed${NC}\n"
 else
     printf "${RED}❌ Add-on installation failed or timed out${NC}\n"
@@ -136,9 +127,7 @@ else
     fi
 fi
 
-# Clean up environment variables
-unset ADDON_THEME_PATH ADDON_THEME_NAME ADDON_PANTHEON_SITE ADDON_PANTHEON_ENV
-unset ADDON_MIGRATE_SOURCE ADDON_MIGRATE_ENV ADDON_NON_INTERACTIVE
+# Clean up test variables (no longer needed)
 
 # Clean up input file
 rm -f input.txt 2>/dev/null || true

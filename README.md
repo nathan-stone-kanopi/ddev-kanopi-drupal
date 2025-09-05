@@ -39,7 +39,9 @@ If your project doesn't have DDEV yet, follow these steps:
 **macOS:**
 ```bash
 # Using Homebrew (recommended)
-brew install ddev
+# Install DDEV
+brew install ddev/ddev/ddev
+mkcert -install
 
 # Or using the installer script
 curl -fsSL https://ddev.com/install.sh | bash
@@ -53,14 +55,12 @@ Navigate to your existing project directory and configure DDEV:
 ```bash
 cd /path/to/your-drupal-project
 
-# Initialize DDEV configuration
-ddev config --project-type=drupal --docroot=web --php-version=8.3
+# Initialize DDEV configuration. Match your existing PHP/DB versions
+ddev config --project-type=drupal --docroot=web --php-version=8.3 --database=mariadb:10.6
 
-# Add Pantheon machine token
+# Add Pantheon machine token globally.  Just needed to be done once.
 ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_pantheon_token
 
-# Start DDEV
-ddev start
 ```
 
 #### Step 3: Install This Add-on
@@ -69,8 +69,8 @@ ddev start
 # Install the Kanopi Pantheon Drupal add-on (includes interactive configuration)
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
-# Restart DDEV
-ddev restart
+# Initialize
+ddev init
 ```
 
 #### Step 4: Interactive Configuration
@@ -287,9 +287,19 @@ ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
 ### Remove the Add-on
 ```bash
-# Remove the add-on completely
+# Remove the add-on completely (includes Redis, Solr, and all 17 commands)
 ddev add-on remove kanopi-pantheon-drupal
+
+# Restart DDEV to apply changes
+ddev restart
 ```
+
+The removal process automatically:
+- ✅ Uninstalls Redis add-on (`ddev-redis`)
+- ✅ Uninstalls Solr add-on (`ddev-drupal-solr`) 
+- ✅ Removes all 17 custom commands
+- ✅ Cleans up command directories
+- ✅ Preserves your environment variables (remove manually if needed)
 
 ## Troubleshooting
 

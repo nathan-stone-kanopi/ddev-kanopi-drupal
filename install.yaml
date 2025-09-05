@@ -12,112 +12,72 @@ pre_install_actions:
 # Collect user input for configuration
 - |
   #ddev-description:Collecting configuration for Kanopi Pantheon Drupal Add-on
-  echo ""
-  echo "🔧 Configuring Kanopi Pantheon Drupal Add-on..."
-  echo ""
+  printf "\n🔧 Configuring Kanopi Pantheon Drupal Add-on...\n\n"
   
-  # Check if running in non-interactive mode (for testing)
-  if [ "${ADDON_NON_INTERACTIVE:-}" = "true" ]; then
-    echo "🤖 Running in non-interactive mode (test environment)"
-    
-    # Use pre-set environment variables
-    ADDON_THEME_PATH="${ADDON_THEME_PATH:-themes/custom/themename}"
-    ADDON_THEME_NAME="${ADDON_THEME_NAME:-themename}"
-    ADDON_PANTHEON_SITE="${ADDON_PANTHEON_SITE:-your-pantheon-site}"
-    ADDON_PANTHEON_ENV="${ADDON_PANTHEON_ENV:-dev}"
-    ADDON_MIGRATE_SOURCE="${ADDON_MIGRATE_SOURCE:-}"
-    ADDON_MIGRATE_ENV="${ADDON_MIGRATE_ENV:-}"
-    
-    echo "📁 Theme path: $ADDON_THEME_PATH"
-    echo "🎨 Theme name: $ADDON_THEME_NAME"
-    echo "🏛️  Pantheon site: $ADDON_PANTHEON_SITE"
-    echo "🌍 Pantheon env: $ADDON_PANTHEON_ENV"
-    echo "📦 Migration source: ${ADDON_MIGRATE_SOURCE:-'(not set)'}"
-    echo "🌍 Migration env: ${ADDON_MIGRATE_ENV:-'(not set)'}"
-    
-  else
-    # Interactive mode - collect user input
-    
-    # THEME configuration
-    printf "📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): "
-    read ADDON_THEME_PATH
-    if [ -z "$ADDON_THEME_PATH" ]; then
-      ADDON_THEME_PATH="themes/custom/themename"
-      echo "⚠️  Using default theme path: $ADDON_THEME_PATH"
-    fi
-    
-    # THEMENAME configuration
-    printf "🎨 Enter your theme name (e.g., mytheme): "
-    read ADDON_THEME_NAME
-    if [ -z "$ADDON_THEME_NAME" ]; then
-      ADDON_THEME_NAME="themename"
-      echo "⚠️  Using default theme name: $ADDON_THEME_NAME"
-    fi
-    
-    # PANTHEON_SITE configuration
-    printf "🏛️  Enter your Pantheon project machine name (e.g., my-site): "
-    read ADDON_PANTHEON_SITE
-    if [ -z "$ADDON_PANTHEON_SITE" ]; then
-      echo "❌ PANTHEON_SITE is required for proper functionality"
-      exit 1
-    fi
-    
-    # PANTHEON_ENV configuration
-    printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
-    read ADDON_PANTHEON_ENV
-    if [ -z "$ADDON_PANTHEON_ENV" ]; then
-      ADDON_PANTHEON_ENV="dev"
-    fi
-    
-    echo ""
-    echo "Optional Migration Configuration:"
-    echo "Press Enter to skip if you don't need migration support"
-    echo ""
-    
-    # MIGRATE_DB_SOURCE configuration (optional)
-    printf "📦 Enter migration source Pantheon project name (optional): "
-    read ADDON_MIGRATE_SOURCE
-    
-    # MIGRATE_DB_ENV configuration (optional)
-    printf "🌍 Enter migration source environment (dev/test/live) (optional): "
-    read ADDON_MIGRATE_ENV
+  # THEME configuration
+  printf "📁 Enter the path to your active Drupal theme (like 'themes/custom/mytheme'): "
+  read THEME_PATH
+  if [ -z "$THEME_PATH" ]; then
+    THEME_PATH="themes/custom/themename"
+    printf "⚠️  Using default theme path: $THEME_PATH\n"
+  fi
+  ddev config --web-environment-add THEME="$THEME_PATH"
+  
+  # THEMENAME configuration  
+  printf "\n🎨 Enter your theme name (like 'mytheme'): "
+  read THEME_NAME
+  if [ -z "$THEME_NAME" ]; then
+    THEME_NAME="themename"
+    printf "⚠️  Using default theme name: $THEME_NAME\n"
+  fi
+  ddev config --web-environment-add THEMENAME="$THEME_NAME"
+  
+  # PANTHEON_SITE configuration
+  printf "\n🏛️  Enter your Pantheon project machine name (like 'my-site'): "
+  read PANTHEON_SITE
+  if [ -z "$PANTHEON_SITE" ]; then
+    printf "❌ PANTHEON_SITE is required for proper functionality\n"
+    exit 1
+  fi
+  ddev config --web-environment-add PANTHEON_SITE="$PANTHEON_SITE"
+  
+  # PANTHEON_ENV configuration
+  printf "\n🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
+  read PANTHEON_ENV
+  if [ -z "$PANTHEON_ENV" ]; then
+    PANTHEON_ENV="dev"
+  fi
+  ddev config --web-environment-add PANTHEON_ENV="$PANTHEON_ENV"
+  
+  printf "\nOptional Migration Configuration:\n"
+  printf "Press Enter to skip if you don't need migration support\n\n"
+  
+  # MIGRATE_DB_SOURCE configuration (optional)
+  printf "📦 Enter migration source Pantheon project name (optional): "
+  read MIGRATE_SOURCE
+  if [ -n "$MIGRATE_SOURCE" ]; then
+    ddev config --web-environment-add MIGRATE_DB_SOURCE="$MIGRATE_SOURCE"
   fi
   
-  # Export variables for post-install use
-  export ADDON_THEME_PATH
-  export ADDON_THEME_NAME
-  export ADDON_PANTHEON_SITE
-  export ADDON_PANTHEON_ENV
-  export ADDON_MIGRATE_SOURCE
-  export ADDON_MIGRATE_ENV
+  # MIGRATE_DB_ENV configuration (optional)
+  printf "\n🌍 Enter migration source environment (dev/test/live) (optional): "
+  read MIGRATE_ENV
+  if [ -n "$MIGRATE_ENV" ]; then
+    ddev config --web-environment-add MIGRATE_DB_ENV="$MIGRATE_ENV"
+  fi
   
-  echo ""
-  echo "✅ Configuration collected successfully"
+  printf "\n✅ Configuration collected successfully\n"
 
 # Post-install actions
 post_install_actions:
-# Apply the collected configuration and detect Pantheon settings
+# Apply additional configuration and detect Pantheon settings
 - |
-  echo ""
-  echo "⚙️  Applying configuration..."
+  printf "\n⚙️  Applying configuration...\n"
   
-  # Apply collected configuration values with defaults
+  # Set docroot
   ddev config --docroot=web
-  ddev config --web-environment-add THEME=${ADDON_THEME_PATH:-themes/custom/themename}
-  ddev config --web-environment-add THEMENAME=${ADDON_THEME_NAME:-themename}
-  ddev config --web-environment-add PANTHEON_SITE=${ADDON_PANTHEON_SITE:-your-pantheon-site}
-  ddev config --web-environment-add PANTHEON_ENV=${ADDON_PANTHEON_ENV:-dev}
   
-  # Apply optional migration variables if provided
-  if [ -n "${ADDON_MIGRATE_SOURCE:-}" ]; then
-    ddev config --web-environment-add MIGRATE_DB_SOURCE=${ADDON_MIGRATE_SOURCE}
-  fi
-  
-  if [ -n "${ADDON_MIGRATE_ENV:-}" ]; then
-    ddev config --web-environment-add MIGRATE_DB_ENV=${ADDON_MIGRATE_ENV}
-  fi
-  
-  echo "✅ Configuration applied successfully"
+  printf "✅ Configuration applied successfully\n"
   
   # Search for pantheon.yml and configure versions
   echo ""
