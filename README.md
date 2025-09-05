@@ -49,26 +49,24 @@ curl -fsSL https://ddev.com/install.sh | bash
 
 **Linux/Windows:** Follow instructions at [ddev.readthedocs.io](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/)
 
-#### Step 2: Initialize DDEV in Your Project
+#### Step 2: Initialize DDEV in Your Project and run addon
 
 Navigate to your existing project directory and configure DDEV:
 ```bash
 cd /path/to/your-drupal-project
 
-# Initialize DDEV configuration. Match your existing PHP/DB versions
+# Initialize DDEV configuration. Match your existing PHP/DB versions set in pantheon.yml
 ddev config --project-type=drupal --docroot=web --php-version=8.3 --database=mariadb:10.6
 
 # Add Pantheon machine token globally.  Just needed to be done once.
 ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_pantheon_token
-
 ```
 
-#### Step 3: Install This Add-on
+If you are running Solr, copy and paste the connection details and tweak as necessary.
+
+#### Step 3: Spin up project
 
 ```bash
-# Install the Kanopi Pantheon Drupal add-on (includes interactive configuration)
-ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
-
 # Initialize
 ddev init
 ```
@@ -96,42 +94,6 @@ ddev config --web-environment-add THEMENAME=your-theme-name
 # etc.
 ```
 
-#### Step 5: Complete Setup
-
-```bash
-# Run complete initialization (installs all dependencies and tools)
-ddev init
-
-# Open your site
-ddev open
-```
-
-### Quick Start Summary
-
-For the performant developer:
-```bash
-# 1. Navigate to your Drupal project
-cd your-drupal-project
-
-# 2. Configure DDEV
-ddev config --project-type=drupal --docroot=web --php-version=8.3
-
-# 3. Add Pantheon token
-ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token
-
-# 4. Start DDEV and add add-on (includes interactive configuration)
-ddev start
-ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
-
-# 5. Restart and initialize
-ddev restart
-ddev init
-
-# 6. You're ready to develop!
-ddev open
-```
-
-
 ## Interactive Installation
 
 During the add-on installation process, you'll be prompted to configure your project settings:
@@ -139,34 +101,6 @@ During the add-on installation process, you'll be prompted to configure your pro
 ```bash
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 ```
-
-**Example interaction:**
-```
-🔧 Configuring Kanopi Pantheon Drupal Add-on...
-
-📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): themes/custom/mysite
-✅ THEME set to themes/custom/mysite
-
-🎨 Enter your theme name (e.g., mytheme): mysite
-✅ THEMENAME set to mysite
-
-🏛️  Enter your Pantheon project machine name (e.g., my-site): my-production-site
-✅ PANTHEON_SITE set to my-production-site
-
-🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: live
-✅ PANTHEON_ENV set to live
-
-Optional Migration Configuration:
-Press Enter to skip if you don't need migration support
-
-📦 Enter migration source Pantheon project name (optional): old-site
-✅ MIGRATE_DB_SOURCE set to old-site
-
-🌍 Enter migration source environment (dev/test/live) (optional): live
-✅ MIGRATE_DB_ENV set to live
-```
-
-The configuration is automatically applied to your DDEV project during installation.
 
 ## Available Commands
 
