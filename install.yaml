@@ -230,6 +230,9 @@ post_install_actions:
     echo "⚠️  Redis add-on installation failed or timed out"
   else
     echo "✅ Redis add-on installed successfully"
+    echo ""
+    echo "Ignore DDEV Redis settings file"
+    echo "settings.ddev.redis.php" >> ../.gitignore
   fi
 - |
   #ddev-description: Install Solr add-on for search functionality
