@@ -58,8 +58,29 @@ cd /path/to/your-drupal-project
 # Initialize DDEV configuration. Match your existing PHP/DB versions set in pantheon.yml
 ddev config --project-type=drupal --docroot=web --php-version=8.3 --database=mariadb:10.6
 
-# Add Pantheon machine token globally.  Just needed to be done once.
-ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_pantheon_token
+# Run add-on
+ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
+```
+
+During installation, you'll be prompted to configure:
+
+1. **Theme Settings**:
+    - **THEME**: Path to your active Drupal theme (e.g., `themes/custom/mytheme`)
+    - **THEMENAME**: Your theme name (e.g., `mytheme`)
+
+2. **Pantheon Settings**:
+    - **PANTHEON_SITE**: Your Pantheon project machine name (required)
+    - **PANTHEON_ENV**: Default environment for database pulls (defaults to `dev`)
+
+3. **Optional Migration Settings**:
+    - **MIGRATE_DB_SOURCE**: Migration source Pantheon project (optional)
+    - **MIGRATE_DB_ENV**: Migration source environment (optional)
+
+The configuration is applied automatically during installation. You can modify these settings later using:
+```bash
+ddev config --web-environment-add THEME=path/to/your/theme
+ddev config --web-environment-add THEMENAME=your-theme-name
+# etc.
 ```
 
 If you are running Solr, copy and paste the connection details and tweak as necessary.
@@ -69,29 +90,6 @@ If you are running Solr, copy and paste the connection details and tweak as nece
 ```bash
 # Initialize
 ddev init
-```
-
-#### Step 4: Interactive Configuration
-
-During installation, you'll be prompted to configure:
-
-1. **Theme Settings**:
-   - **THEME**: Path to your active Drupal theme (e.g., `themes/custom/mytheme`)
-   - **THEMENAME**: Your theme name (e.g., `mytheme`)
-
-2. **Pantheon Settings**:
-   - **PANTHEON_SITE**: Your Pantheon project machine name (required)
-   - **PANTHEON_ENV**: Default environment for database pulls (defaults to `dev`)
-
-3. **Optional Migration Settings**:
-   - **MIGRATE_DB_SOURCE**: Migration source Pantheon project (optional)
-   - **MIGRATE_DB_ENV**: Migration source environment (optional)
-
-The configuration is applied automatically during installation. You can modify these settings later using:
-```bash
-ddev config --web-environment-add THEME=path/to/your/theme
-ddev config --web-environment-add THEMENAME=your-theme-name
-# etc.
 ```
 
 ## Interactive Installation
