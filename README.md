@@ -11,6 +11,7 @@ A comprehensive DDEV add-on that provides Kanopi's battle-tested workflow for Dr
 - **📦 Drupal Recipe Support**: Apply Drupal 11 recipes with cache management
 - **🔄 Migration Utilities**: Tools for site migrations and database management
 - **⚡ Performance Tools**: Critical CSS generation and asset optimization
+- **🔍 Search Integration**: Redis and Solr add-ons with DDEV configuration
 
 ## Installation
 
@@ -227,6 +228,38 @@ ddev refresh pr-123
 2. **Clean Config**: `ddev uuid-rm config/sync`
 3. **Export Config**: `ddev drush config:export`
 
+## Search Integration
+
+### Solr Configuration
+
+The add-on installs Solr for search functionality. To connect your Drupal site to the DDEV Solr container, add this configuration to `web/sites/default/settings.php`:
+
+```php
+/**
+ * DDEV Solr Configuration
+ * Override Pantheon search configuration when in DDEV environment
+ */
+if (getenv('IS_DDEV_PROJECT') == 'true') {
+  // Override any Pantheon search configuration for DDEV
+  $config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['host'] = 'solr';
+  $config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['port'] = '8983';
+  $config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['path'] = '/';
+  $config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['core'] = 'dev';
+  
+  // Alternative configuration if using different server name
+  $config['search_api.server.solr']['backend_config']['connector_config']['host'] = 'solr';
+  $config['search_api.server.solr']['backend_config']['connector_config']['port'] = '8983';
+  $config['search_api.server.solr']['backend_config']['connector_config']['path'] = '/';
+  $config['search_api.server.solr']['backend_config']['connector_config']['core'] = 'dev';
+}
+```
+
+**Note**: Adjust the server machine name (`pantheon_solr8` or `solr`) to match your project's Search API server configuration.
+
+### Redis Integration
+
+Redis is automatically installed and configured for object caching. The configuration is applied automatically during add-on installation.
+
 ## Environment Variables
 
 The add-on automatically configures these environment variables:
@@ -297,12 +330,14 @@ To test the add-on installation process:
 ```
 
 The test script will:
-- Create a temporary DDEV project in `test-install/` directory
-- Test the interactive installation process with predefined values
+- Create a temporary DDEV project with real Drupal from git.drupalcode.org
+- Test the non-interactive installation process with predefined values
 - Validate that environment variables are set correctly in `config.yaml`
+- Verify PHP and database versions from `pantheon.yml` are applied
+- Check that Redis and Solr add-ons are installed
 - Verify custom commands are available
 - Test add-on removal
-- Clean up the test environment automatically
+- Preserve test environment for inspection (use cleanup commands shown at end)
 
 ## Contributing
 

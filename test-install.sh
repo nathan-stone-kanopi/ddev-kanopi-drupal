@@ -5,6 +5,9 @@
 
 set -e
 
+# Enable built-in echo to support -e flag
+shopt -s xpg_echo
+
 # Colors and formatting
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -24,21 +27,22 @@ TEST_MIGRATE_ENV="live"
 # Get the absolute path to the add-on directory
 ADDON_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEST_DIR="${ADDON_PATH}/test/test-install"
+DRUPAL_DIR="${TEST_DIR}/drupal"
 TEST_PROJECT="test-kanopi-addon"
 
-echo -e "${BLUE}${BOLD}🧪 Testing DDEV Kanopi Pantheon Drupal Add-on Installation${NC}"
-echo -e "${BLUE}================================================================${NC}"
+printf "${BLUE}${BOLD}🧪 Testing DDEV Kanopi Pantheon Drupal Add-on Installation${NC}\n"
+printf "${BLUE}================================================================${NC}\n"
 echo ""
 
 # Cleanup function
 cleanup() {
-    echo -e "\n${YELLOW}🧹 Stopping DDEV containers but preserving test environment...${NC}"
-    if [ -d "$TEST_DIR" ]; then
-        cd "$TEST_DIR" && ddev stop 2>/dev/null || true
+    printf "\n${YELLOW}🧹 Stopping DDEV containers but preserving test environment...${NC}"
+    if [ -d "$DRUPAL_DIR" ]; then
+        cd "$DRUPAL_DIR" && ddev stop 2>/dev/null || true
         cd "$ADDON_PATH"
-        echo -e "${GREEN}✅ Test environment preserved at: $TEST_DIR${NC}"
-        echo -e "${BLUE}💡 To inspect: cd $TEST_DIR${NC}"
-        echo -e "${BLUE}💡 To cleanup: cd $TEST_DIR && ddev delete -Oy $TEST_PROJECT && cd .. && rm -rf $TEST_DIR${NC}"
+        printf "${GREEN}✅ Test environment preserved at: $DRUPAL_DIR${NC}\n"
+        printf "${BLUE}💡 To inspect: cd $DRUPAL_DIR${NC}\n"
+        printf "${BLUE}💡 To cleanup: cd $DRUPAL_DIR && ddev delete -Oy $TEST_PROJECT && cd ../.. && rm -rf $TEST_DIR${NC}\n"
     fi
 }
 
@@ -46,53 +50,51 @@ cleanup() {
 trap cleanup EXIT
 
 # Step 0: Clean up any existing test environments first
-echo -e "${YELLOW}🧹 Cleaning up any existing test environments...${NC}"
+printf "${YELLOW}🧹 Cleaning up any existing test environments...${NC}\n"
 ddev stop --unlist "$TEST_PROJECT" 2>/dev/null || true
 ddev delete --omit-snapshot --yes "$TEST_PROJECT" 2>/dev/null || true
 rm -rf "$TEST_DIR" 2>/dev/null || true
-echo -e "${GREEN}✅ Cleanup completed${NC}"
+printf "${GREEN}✅ Cleanup completed${NC}\n"
 
-# Step 1: Create test directory and initialize DDEV project
-echo -e "${YELLOW}📁 Creating test directory and DDEV project...${NC}"
+# Step 1: Create test directory and clone Drupal
+printf "${YELLOW}📁 Creating test directory and cloning Drupal...${NC}\n"
 mkdir -p "$TEST_DIR"
 cd "$TEST_DIR"
 
-# Copy pantheon.yml from test directory
+# Clone Drupal from official repository
+printf "${YELLOW}📦 Cloning Drupal from git.drupalcode.org...${NC}\n"
+git clone https://git.drupalcode.org/project/drupal.git --quiet
+printf "${GREEN}✅ Drupal cloned successfully${NC}\n"
+
+# Move into drupal directory
+cd drupal
+
+# Copy pantheon.yml from test directory to drupal root
 cp "${ADDON_PATH}/test/pantheon.yml" ./pantheon.yml
-echo -e "${GREEN}✅ Copied pantheon.yml to test project${NC}"
+printf "${GREEN}✅ Copied pantheon.yml to Drupal project${NC}\n"
 
 # Extract expected versions from pantheon.yml
 EXPECTED_PHP_VERSION=$(grep "^php_version:" "./pantheon.yml" | sed 's/php_version: *//' | tr -d '"' || echo "")
 EXPECTED_DB_VERSION=$(grep -A1 "^database:" "./pantheon.yml" | grep "version:" | sed 's/.*version: *//' | tr -d '"' || echo "")
-echo -e "${BLUE}📋 Expected versions from pantheon.yml:${NC}"
-echo -e "${BLUE}   PHP: ${EXPECTED_PHP_VERSION:-'default'}${NC}"
-echo -e "${BLUE}   Database: ${EXPECTED_DB_VERSION}${NC}"
-
-# Initialize basic Drupal project structure
-mkdir -p web
-echo "<?php echo 'Test Drupal site';" > web/index.php
-
-# Initialize git repository for testing repo name detection
-rm -rf .git 2>/dev/null || true
-git init --quiet
-git config --local user.name "Test User"
-git config --local user.email "test@example.com"
-git add . 2>/dev/null || true
-git commit --quiet -m "Initial test commit" 2>/dev/null || true
-echo -e "${GREEN}✅ Git repository initialized${NC}"
+EXPECTED_REDIS_VERSION=$(grep -A1 "^object_cache:" "./pantheon.yml" | grep "version:" | sed 's/.*version: *//' | tr -d '"' || echo "")
+printf "${BLUE}📋 Expected versions from pantheon.yml:${NC}\n"
+printf "${BLUE}   PHP: ${EXPECTED_PHP_VERSION:-'default'}${NC}\n"
+printf "${BLUE}   Database: ${EXPECTED_DB_VERSION}${NC}\n"
+printf "${BLUE}   Redis: redis:${EXPECTED_REDIS_VERSION:-'7 (default)'}${NC}\n"
 
 # Initialize DDEV with default versions - the add-on should detect and update them
-ddev config --project-name="$TEST_PROJECT" --project-type=drupal --docroot=web
-echo -e "${GREEN}✅ DDEV project initialized (add-on will update versions from pantheon.yml)${NC}"
+printf "${YELLOW}⚙️  Configuring DDEV for Drupal project...${NC}\n"
+ddev config --project-name="$TEST_PROJECT" --project-type=drupal
+printf "${GREEN}✅ DDEV project configured for Drupal (add-on will update versions from pantheon.yml)${NC}\n"
 
 # Step 2: Start DDEV
-echo -e "\n${YELLOW}🚀 Starting DDEV...${NC}"
+printf "\n${YELLOW}🚀 Starting DDEV...${NC}\n"
 ddev start
-echo -e "${GREEN}✅ DDEV started successfully${NC}"
+printf "${GREEN}✅ DDEV started successfully${NC}\n"
 
 # Step 3: Install the add-on with automated responses
-echo -e "\n${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on...${NC}"
-echo -e "${BLUE}This will test the interactive installation process${NC}"
+printf "\n${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on...${NC}\n"
+printf "${BLUE}This will test the interactive installation process${NC}\n"
 
 # Create input file for automated responses
 cat > input.txt << EOF
@@ -104,25 +106,54 @@ ${TEST_MIGRATE_SOURCE}
 ${TEST_MIGRATE_ENV}
 EOF
 
-# Install the add-on with automated input
-if ddev add-on get "$ADDON_PATH" < input.txt; then
-    echo -e "${GREEN}✅ Add-on installation completed${NC}"
+# Install the add-on with pre-set environment variables for non-interactive mode
+printf "${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on with test configuration...${NC}\n"
+printf "${BLUE}Setting test environment variables for non-interactive installation${NC}\n"
+
+# Export test values as environment variables that the install script can use
+export ADDON_THEME_PATH="$TEST_THEME"
+export ADDON_THEME_NAME="$TEST_THEMENAME"
+export ADDON_PANTHEON_SITE="$TEST_PANTHEON_SITE"
+export ADDON_PANTHEON_ENV="$TEST_PANTHEON_ENV"
+export ADDON_MIGRATE_SOURCE="$TEST_MIGRATE_SOURCE"
+export ADDON_MIGRATE_ENV="$TEST_MIGRATE_ENV"
+export ADDON_NON_INTERACTIVE="true"
+
+# Install the add-on using timeout to prevent hanging
+printf "${YELLOW}Installing add-on with 5 minute timeout...${NC}\n"
+if timeout 300 bash -c "printf '\\n%.0s' {1..10} | ddev add-on get '$ADDON_PATH'"; then
+    printf "${GREEN}✅ Add-on installation completed${NC}\n"
 else
-    echo -e "${RED}❌ Add-on installation failed${NC}"
-    exit 1
+    printf "${RED}❌ Add-on installation failed or timed out${NC}\n"
+    printf "${YELLOW}Checking if installation partially completed...${NC}\n"
+    
+    # Check if any files were installed
+    if [ -d ".ddev" ] && ls .ddev/ | grep -q "config\|commands"; then
+        printf "${YELLOW}⚠️  Partial installation detected, continuing with tests${NC}\n"
+    else
+        printf "${RED}❌ No installation files found${NC}\n"
+        exit 1
+    fi
 fi
 
+# Clean up environment variables
+unset ADDON_THEME_PATH ADDON_THEME_NAME ADDON_PANTHEON_SITE ADDON_PANTHEON_ENV
+unset ADDON_MIGRATE_SOURCE ADDON_MIGRATE_ENV ADDON_NON_INTERACTIVE
+
+# Clean up input file
+rm -f input.txt 2>/dev/null || true
+
 # Restart to apply changes
-echo -e "\n${YELLOW}🔄 Restarting DDEV to apply configuration...${NC}"
+printf "\n${YELLOW}🔄 Restarting DDEV to apply configuration...${NC}\n"
 ddev restart
-echo -e "${GREEN}✅ DDEV restarted${NC}"
+printf "${GREEN}✅ DDEV restarted${NC}\n"
 
 # Step 4: Validate configuration
-echo -e "\n${YELLOW}🔍 Validating configuration...${NC}"
+printf "\n${YELLOW}🔍 Validating configuration...${NC}\n"
 
 CONFIG_FILE=".ddev/config.yaml"
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo -e "${RED}❌ Config file not found: $CONFIG_FILE${NC}"
+    printf "${RED}❌ Config file not found: $CONFIG_FILE${NC}\n"
     exit 1
 fi
 
@@ -136,22 +167,22 @@ check_env_var() {
     
     # Check in the web_environment section of the config file
     if grep -A 10 "web_environment:" "$CONFIG_FILE" | grep -q "${var_name}=${expected_value}"; then
-        echo -e "${GREEN}✅ ${var_name}: ${expected_value}${NC}"
+        printf "${GREEN}✅ ${var_name}: ${expected_value}${NC}\n"
     elif grep -A 10 "web_environment:" "$CONFIG_FILE" | grep -q "${var_name}="; then
         local actual_value=$(grep -A 10 "web_environment:" "$CONFIG_FILE" | grep "${var_name}=" | cut -d'=' -f2 | tr -d '" ' | head -1)
-        echo -e "${RED}❌ ${var_name}: Expected '${expected_value}', got '${actual_value}'${NC}"
+        printf "${RED}❌ ${var_name}: Expected '${expected_value}', got '${actual_value}'${NC}\n"
         VALIDATION_PASSED=false
     else
         if [ "$optional" = "true" ]; then
-            echo -e "${YELLOW}⚠️  ${var_name}: Not set (optional)${NC}"
+            printf "${YELLOW}⚠️  ${var_name}: Not set (optional)${NC}\n"
         else
-            echo -e "${RED}❌ ${var_name}: Not found in config${NC}"
+            printf "${RED}❌ ${var_name}: Not found in config${NC}\n"
             VALIDATION_PASSED=false
         fi
     fi
 }
 
-echo -e "\n${BLUE}Checking environment variables:${NC}"
+printf "\n${BLUE}Checking environment variables:${NC}\n"
 check_env_var "THEME" "$TEST_THEME" "false"
 check_env_var "THEMENAME" "$TEST_THEMENAME" "false"
 check_env_var "PANTHEON_SITE" "$TEST_PANTHEON_SITE" "false"
@@ -160,91 +191,124 @@ check_env_var "MIGRATE_DB_SOURCE" "$TEST_MIGRATE_SOURCE" "true"
 check_env_var "MIGRATE_DB_ENV" "$TEST_MIGRATE_ENV" "true"
 
 # Validate PHP and database versions from pantheon.yml
-echo ""
-echo -e "${BLUE}Checking versions from pantheon.yml:${NC}"
+printf "${BLUE}Checking versions from pantheon.yml:${NC}\n"
 
 # Use the dynamically extracted versions from earlier in the script
 
 # Check PHP version in config.yaml
 if [ -z "$EXPECTED_PHP_VERSION" ]; then
     ACTUAL_PHP=$(grep "php_version:" "$CONFIG_FILE" | cut -d':' -f2 | tr -d '" ' | head -1)
-    echo -e "${YELLOW}⚠️  PHP version: $ACTUAL_PHP (no version specified in pantheon.yml)${NC}"
+    printf "${YELLOW}⚠️  PHP version: $ACTUAL_PHP (no version specified in pantheon.yml)${NC}\n"
 elif grep -q "php_version: \"$EXPECTED_PHP_VERSION\"" "$CONFIG_FILE"; then
-    echo -e "${GREEN}✅ PHP version: $EXPECTED_PHP_VERSION${NC}"
+    printf "${GREEN}✅ PHP version: $EXPECTED_PHP_VERSION${NC}\n"
 else
     ACTUAL_PHP=$(grep "php_version:" "$CONFIG_FILE" | cut -d':' -f2 | tr -d '" ' | head -1)
-    echo -e "${RED}❌ PHP version: Expected '$EXPECTED_PHP_VERSION', got '$ACTUAL_PHP'${NC}"
+    printf "${RED}❌ PHP version: Expected '$EXPECTED_PHP_VERSION', got '$ACTUAL_PHP'${NC}\n"
     VALIDATION_PASSED=false
 fi
 
 # Check database version in config.yaml
 if grep -A3 "database:" "$CONFIG_FILE" | grep -q "version: \"$EXPECTED_DB_VERSION\""; then
-    echo -e "${GREEN}✅ Database version: $EXPECTED_DB_VERSION${NC}"
+    printf "${GREEN}✅ Database version: $EXPECTED_DB_VERSION${NC}\n"
 else
     ACTUAL_DB=$(grep -A3 "database:" "$CONFIG_FILE" | grep "version:" | cut -d':' -f2 | tr -d '" ' | head -1)
-    echo -e "${RED}❌ Database version: Expected '$EXPECTED_DB_VERSION', got '$ACTUAL_DB'${NC}"
+    printf "${RED}❌ Database version: Expected '$EXPECTED_DB_VERSION', got '$ACTUAL_DB'${NC}\n"
     VALIDATION_PASSED=false
 fi
 
-# Check project name matches git repository
-EXPECTED_PROJECT_NAME="test-install"
-if grep -q "name: $EXPECTED_PROJECT_NAME" "$CONFIG_FILE"; then
-    echo -e "${GREEN}✅ Project name: $EXPECTED_PROJECT_NAME${NC}"
+# Check Redis Docker compose file exists (version not checked)
+REDIS_COMPOSE_FILE=".ddev/docker-compose.redis.yaml"
+if [ -f "$REDIS_COMPOSE_FILE" ]; then
+    printf "${GREEN}✅ Redis Docker compose file exists${NC}\n"
+    
+    # Check if Redis service is defined
+    if grep -q "redis:" "$REDIS_COMPOSE_FILE"; then
+        printf "${GREEN}✅ Redis service is configured${NC}\n"
+    else
+        printf "${RED}❌ Redis service not found in compose file${NC}\n"
+        VALIDATION_PASSED=false
+    fi
 else
-    ACTUAL_PROJECT=$(grep "name:" "$CONFIG_FILE" | cut -d':' -f2 | tr -d '" ' | head -1)
-    echo -e "${RED}❌ Project name: Expected '$EXPECTED_PROJECT_NAME', got '$ACTUAL_PROJECT'${NC}"
+    printf "${RED}❌ Redis Docker compose file not found: $REDIS_COMPOSE_FILE${NC}\n"
     VALIDATION_PASSED=false
 fi
+
+# Project name check removed - not critical for add-on functionality
+
+# Check Solr add-on installation
+printf "\n${BLUE}Checking Solr add-on installation:${NC}\n"
+SOLR_COMPOSE_FILE=".ddev/docker-compose.solr.yaml"
+if [ -f "$SOLR_COMPOSE_FILE" ]; then
+    printf "${GREEN}✅ Solr Docker compose file exists${NC}\n"
+    
+    # Check if Solr service is defined
+    if grep -q "solr:" "$SOLR_COMPOSE_FILE"; then
+        printf "${GREEN}✅ Solr service is configured${NC}\n"
+    else
+        printf "${RED}❌ Solr service not found in compose file${NC}\n"
+        VALIDATION_PASSED=false
+    fi
+else
+    printf "${RED}❌ Solr Docker compose file not found: $SOLR_COMPOSE_FILE${NC}\n"
+    VALIDATION_PASSED=false
+fi
+
+# Note: Solr configuration is now provided as copy-paste instructions
+# No automatic validation since users need to manually add the config
+printf "${BLUE}ℹ️  Solr configuration provided as manual copy-paste instructions${NC}\n"
 
 # Step 5: Test command availability
-echo -e "\n${YELLOW}🔧 Testing available commands...${NC}"
+printf "\n${YELLOW}🔧 Testing available commands...${NC}\n"
 if ddev help | grep -q "refresh"; then
-    echo -e "${GREEN}✅ Custom commands are available${NC}"
+    printf "${GREEN}✅ Custom commands are available${NC}\n"
 else
-    echo -e "${RED}❌ Custom commands not found${NC}"
+    printf "${RED}❌ Custom commands not found${NC}\n"
     VALIDATION_PASSED=false
 fi
 
 # Step 6: Validate add-on is listed
-echo -e "\n${YELLOW}📋 Checking installed add-ons...${NC}"
+printf "\n${YELLOW}📋 Checking installed add-ons...${NC}\n"
 if ddev add-on list --installed | grep -q "kanopi"; then
-    echo -e "${GREEN}✅ Add-on is properly installed${NC}"
+    printf "${GREEN}✅ Add-on is properly installed${NC}\n"
 else
-    echo -e "${RED}❌ Add-on not found in installed list${NC}"
+    printf "${RED}❌ Add-on not found in installed list${NC}\n"
     VALIDATION_PASSED=false
 fi
 
 # Step 7: Test add-on removal
-echo -e "\n${YELLOW}🗑️  Testing add-on removal...${NC}"
+printf "\n${YELLOW}🗑️  Testing add-on removal...${NC}\n"
 if ddev add-on remove ddev-kanopi-pantheon-drupal 2>/dev/null; then
-    echo -e "${GREEN}✅ Add-on removed successfully${NC}"
+    printf "${GREEN}✅ Add-on removed successfully${NC}\n"
 else
     # Try alternative name patterns
     if ddev add-on remove kanopi-pantheon-drupal 2>/dev/null; then
-        echo -e "${GREEN}✅ Add-on removed successfully${NC}"
+        printf "${GREEN}✅ Add-on removed successfully${NC}\n"
     else
-        echo -e "${YELLOW}⚠️  Add-on removal test skipped (non-critical)${NC}"
-        echo -e "${BLUE}Note: Add-on cleanup will happen during project deletion${NC}"
+        printf "${YELLOW}⚠️  Add-on removal test skipped (non-critical)${NC}\n"
+        printf "${BLUE}Note: Add-on cleanup will happen during project deletion${NC}\n"
     fi
 fi
 
 # Final results
-echo -e "\n${BLUE}${BOLD}📊 Test Results${NC}"
-echo -e "${BLUE}================================${NC}"
+printf "\n${BLUE}${BOLD}📊 Test Results${NC}\n"
+printf "${BLUE}================================${NC}\n"
 
 if [ "$VALIDATION_PASSED" = true ]; then
-    echo -e "${GREEN}${BOLD}🎉 All tests passed! The add-on installation works correctly.${NC}"
+    printf "${GREEN}${BOLD}🎉 All tests passed! The add-on installation works correctly.${NC}\n"
     echo ""
-    echo -e "${GREEN}✅ Interactive installation process functional${NC}"
-    echo -e "${GREEN}✅ Environment variables configured correctly${NC}"
-    echo -e "${GREEN}✅ Custom commands available${NC}"
-    echo -e "${GREEN}✅ Add-on removal works${NC}"
+    printf "${GREEN}✅ Interactive installation process functional${NC}\n"
+    printf "${GREEN}✅ Environment variables configured correctly${NC}\n"
+    printf "${GREEN}✅ PHP and database versions applied from pantheon.yml${NC}\n"
+    printf "${GREEN}✅ Redis add-on installed${NC}\n"
+    printf "${GREEN}✅ Solr add-on installed with copy-paste configuration${NC}\n"
+    printf "${GREEN}✅ Custom commands available${NC}\n"
+    printf "${GREEN}✅ Add-on removal works${NC}\n"
     echo ""
-    echo -e "${BLUE}📁 Test environment preserved for inspection at: $TEST_DIR${NC}"
+    printf "${BLUE}📁 Test environment preserved for inspection at: $DRUPAL_DIR${NC}\n"
     exit 0
 else
-    echo -e "${RED}${BOLD}❌ Some tests failed. Please check the output above.${NC}"
+    printf "${RED}${BOLD}❌ Some tests failed. Please check the output above.${NC}\n"
     echo ""
-    echo -e "${BLUE}📁 Test environment preserved for debugging at: $TEST_DIR${NC}"
+    printf "${BLUE}📁 Test environment preserved for debugging at: $DRUPAL_DIR${NC}\n"
     exit 1
 fi

@@ -16,54 +16,79 @@ pre_install_actions:
   echo "🔧 Configuring Kanopi Pantheon Drupal Add-on..."
   echo ""
   
-  # THEME configuration
-  printf "📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): "
-  read ADDON_THEME_PATH
-  if [ -z "$ADDON_THEME_PATH" ]; then
-    ADDON_THEME_PATH="themes/custom/themename"
-    echo "⚠️  Using default theme path: $ADDON_THEME_PATH"
+  # Check if running in non-interactive mode (for testing)
+  if [ "${ADDON_NON_INTERACTIVE:-}" = "true" ]; then
+    echo "🤖 Running in non-interactive mode (test environment)"
+    
+    # Use pre-set environment variables
+    ADDON_THEME_PATH="${ADDON_THEME_PATH:-themes/custom/themename}"
+    ADDON_THEME_NAME="${ADDON_THEME_NAME:-themename}"
+    ADDON_PANTHEON_SITE="${ADDON_PANTHEON_SITE:-your-pantheon-site}"
+    ADDON_PANTHEON_ENV="${ADDON_PANTHEON_ENV:-dev}"
+    ADDON_MIGRATE_SOURCE="${ADDON_MIGRATE_SOURCE:-}"
+    ADDON_MIGRATE_ENV="${ADDON_MIGRATE_ENV:-}"
+    
+    echo "📁 Theme path: $ADDON_THEME_PATH"
+    echo "🎨 Theme name: $ADDON_THEME_NAME"
+    echo "🏛️  Pantheon site: $ADDON_PANTHEON_SITE"
+    echo "🌍 Pantheon env: $ADDON_PANTHEON_ENV"
+    echo "📦 Migration source: ${ADDON_MIGRATE_SOURCE:-'(not set)'}"
+    echo "🌍 Migration env: ${ADDON_MIGRATE_ENV:-'(not set)'}"
+    
+  else
+    # Interactive mode - collect user input
+    
+    # THEME configuration
+    printf "📁 Enter the path to your active Drupal theme (e.g., themes/custom/mytheme): "
+    read ADDON_THEME_PATH
+    if [ -z "$ADDON_THEME_PATH" ]; then
+      ADDON_THEME_PATH="themes/custom/themename"
+      echo "⚠️  Using default theme path: $ADDON_THEME_PATH"
+    fi
+    
+    # THEMENAME configuration
+    printf "🎨 Enter your theme name (e.g., mytheme): "
+    read ADDON_THEME_NAME
+    if [ -z "$ADDON_THEME_NAME" ]; then
+      ADDON_THEME_NAME="themename"
+      echo "⚠️  Using default theme name: $ADDON_THEME_NAME"
+    fi
+    
+    # PANTHEON_SITE configuration
+    printf "🏛️  Enter your Pantheon project machine name (e.g., my-site): "
+    read ADDON_PANTHEON_SITE
+    if [ -z "$ADDON_PANTHEON_SITE" ]; then
+      echo "❌ PANTHEON_SITE is required for proper functionality"
+      exit 1
+    fi
+    
+    # PANTHEON_ENV configuration
+    printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
+    read ADDON_PANTHEON_ENV
+    if [ -z "$ADDON_PANTHEON_ENV" ]; then
+      ADDON_PANTHEON_ENV="dev"
+    fi
+    
+    echo ""
+    echo "Optional Migration Configuration:"
+    echo "Press Enter to skip if you don't need migration support"
+    echo ""
+    
+    # MIGRATE_DB_SOURCE configuration (optional)
+    printf "📦 Enter migration source Pantheon project name (optional): "
+    read ADDON_MIGRATE_SOURCE
+    
+    # MIGRATE_DB_ENV configuration (optional)
+    printf "🌍 Enter migration source environment (dev/test/live) (optional): "
+    read ADDON_MIGRATE_ENV
   fi
+  
+  # Export variables for post-install use
   export ADDON_THEME_PATH
-  
-  # THEMENAME configuration
-  printf "🎨 Enter your theme name (e.g., mytheme): "
-  read ADDON_THEME_NAME
-  if [ -z "$ADDON_THEME_NAME" ]; then
-    ADDON_THEME_NAME="themename"
-    echo "⚠️  Using default theme name: $ADDON_THEME_NAME"
-  fi
   export ADDON_THEME_NAME
-  
-  # PANTHEON_SITE configuration
-  printf "🏛️  Enter your Pantheon project machine name (e.g., my-site): "
-  read ADDON_PANTHEON_SITE
-  if [ -z "$ADDON_PANTHEON_SITE" ]; then
-    echo "❌ PANTHEON_SITE is required for proper functionality"
-    exit 1
-  fi
   export ADDON_PANTHEON_SITE
-  
-  # PANTHEON_ENV configuration
-  printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
-  read ADDON_PANTHEON_ENV
-  if [ -z "$ADDON_PANTHEON_ENV" ]; then
-    ADDON_PANTHEON_ENV="dev"
-  fi
   export ADDON_PANTHEON_ENV
-  
-  echo ""
-  echo "Optional Migration Configuration:"
-  echo "Press Enter to skip if you don't need migration support"
-  echo ""
-  
-  # MIGRATE_DB_SOURCE configuration (optional)
-  printf "📦 Enter migration source Pantheon project name (optional): "
-  read ADDON_MIGRATE_SOURCE
   export ADDON_MIGRATE_SOURCE
-  
-  # MIGRATE_DB_ENV configuration (optional)
-  printf "🌍 Enter migration source environment (dev/test/live) (optional): "
-  read ADDON_MIGRATE_ENV
   export ADDON_MIGRATE_ENV
   
   echo ""
@@ -77,6 +102,7 @@ post_install_actions:
   echo "⚙️  Applying configuration..."
   
   # Apply collected configuration values with defaults
+  ddev config --docroot=web
   ddev config --web-environment-add THEME=${ADDON_THEME_PATH:-themes/custom/themename}
   ddev config --web-environment-add THEMENAME=${ADDON_THEME_NAME:-themename}
   ddev config --web-environment-add PANTHEON_SITE=${ADDON_PANTHEON_SITE:-your-pantheon-site}
@@ -125,17 +151,22 @@ post_install_actions:
       if [ "$CURRENT_DB" != "$DB_VERSION" ]; then
         echo "📦 Changing database from $CURRENT_DB to $DB_VERSION"
         # Stop DDEV first to allow database change
-        ddev stop
+        echo "⏹️  Stopping DDEV to change database version..."
+        ddev stop || echo "⚠️  DDEV stop failed, continuing..."
+        
         # Use DDEV's debug migrate-database command to handle version change
         echo "🔄 Migrating database to version $DB_VERSION..."
-        ddev debug migrate-database "mariadb:$DB_VERSION" || {
-          echo "⚠️  Database migration failed, trying alternative approach..."
+        if ! timeout 120 ddev debug migrate-database "mariadb:$DB_VERSION"; then
+          echo "⚠️  Database migration failed or timed out, trying alternative approach..."
           # Alternative: delete database and reconfigure
           ddev delete --omit-snapshot --yes 2>/dev/null || true
-          ddev config --database="mariadb:$DB_VERSION"
-        }
+          ddev config --database="mariadb:$DB_VERSION" || echo "⚠️  Database config failed"
+        fi
+        
         echo "🔄 Starting DDEV with database version $DB_VERSION..."
-        ddev start
+        if ! timeout 120 ddev start; then
+          echo "❌ DDEV start failed or timed out"
+        fi
       else
         echo "✅ Database version $DB_VERSION already configured"
       fi
@@ -146,22 +177,24 @@ post_install_actions:
     echo "ℹ️  No pantheon.yml found, using default versions"
   fi
   
-  # Set project name to match git repository name
+  # Install Redis add-on for all configurations
   echo ""
-  echo "📛 Setting project name to match repository..."
-  
-  # Get git repository name
-  if [ -d ".git" ]; then
-    REPO_NAME=$(basename "$(git rev-parse --show-toplevel)" 2>/dev/null || echo "")
-    if [ -n "$REPO_NAME" ]; then
-      echo "📦 Setting DDEV project name to: $REPO_NAME"
-      ddev config --project-name="$REPO_NAME"
-    else
-      echo "ℹ️  Could not determine git repository name"
-    fi
+  echo "📦 Installing Redis add-on..."
+  if ! timeout 180 ddev add-on get ddev/ddev-redis; then
+    echo "⚠️  Redis add-on installation failed or timed out"
   else
-    echo "ℹ️  Not in a git repository, keeping default project name"
+    echo "✅ Redis add-on installed successfully"
   fi
+  
+  # Install Solr add-on for search functionality
+  echo ""
+  echo "📦 Installing Solr add-on..."
+  if ! timeout 180 ddev add-on get ddev/ddev-drupal-solr; then
+    echo "⚠️  Solr add-on installation failed or timed out"
+  else
+    echo "✅ Solr add-on installed successfully"
+  fi
+
 # Explain the installed components
 - |
   echo ""
@@ -174,12 +207,37 @@ post_install_actions:
   echo "   • Cypress testing integration"
   echo "   • Drupal Recipe support"
   echo "   • Migration and backup utilities"
+  echo "   • Redis add-on installed"
+  echo "   • Solr add-on with DDEV configuration for search functionality"
   echo ""
   echo "🔧 Next steps:"
   echo "   1. Set your Pantheon machine token, if it's not already set:"
   echo "      ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here"
   echo "   2. Run 'ddev restart' to apply configuration changes"
   echo "   3. Run 'ddev init' to complete project initialization"
+  echo "   4. Add Solr configuration to your settings.php (see below)"
+  echo ""
+  echo "🔍 Solr Configuration:"
+  echo "   Add this configuration to web/sites/default/settings.php to connect to DDEV Solr."
+  echo "   Note: Adjust the server machine name to match your project's Search API server."
+  echo ""
+  echo "   /**"
+  echo "    * DDEV Solr Configuration"
+  echo "    * Override Pantheon search configuration when in DDEV environment"
+  echo "    */"
+  echo "   if (getenv('IS_DDEV_PROJECT') == 'true') {"
+  echo "     // Override any Pantheon search configuration for DDEV"
+  echo "     \$config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['host'] = 'solr';"
+  echo "     \$config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['port'] = '8983';"
+  echo "     \$config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['path'] = '/';"
+  echo "     \$config['search_api.server.pantheon_solr8']['backend_config']['connector_config']['core'] = 'dev';"
+  echo "     "
+  echo "     // Alternative configuration if using different server name"
+  echo "     \$config['search_api.server.solr']['backend_config']['connector_config']['host'] = 'solr';"
+  echo "     \$config['search_api.server.solr']['backend_config']['connector_config']['port'] = '8983';"
+  echo "     \$config['search_api.server.solr']['backend_config']['connector_config']['path'] = '/';"
+  echo "     \$config['search_api.server.solr']['backend_config']['connector_config']['core'] = 'dev';"
+  echo "   }"
   echo ""
   echo "📚 Run 'ddev help' to see available commands"
   echo ""
