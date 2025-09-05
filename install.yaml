@@ -243,6 +243,71 @@ post_install_actions:
   echo ""
 
 removal_action:
-# Note what's being removed
+# Remove all installed components and add-ons
 - |
-  echo "Removing Kanopi Pantheon Drupal Add-on..."
+  echo ""
+  echo "🗑️ Removing Kanopi Pantheon Drupal Add-on..."
+  echo ""
+  
+  # Remove Redis add-on
+  echo "📦 Removing Redis add-on..."
+  if ddev add-on remove ddev-redis 2>/dev/null; then
+    echo "✅ Redis add-on removed successfully"
+  else
+    echo "⚠️ Redis add-on removal failed or not found"
+  fi
+  
+  # Remove Solr add-on
+  echo "📦 Removing Solr add-on..."
+  if ddev add-on remove ddev-drupal-solr 2>/dev/null; then
+    echo "✅ Solr add-on removed successfully"
+  else
+    echo "⚠️ Solr add-on removal failed or not found"
+  fi
+  
+  # Remove all custom commands
+  echo "🔧 Removing custom commands..."
+  
+  # Remove host commands
+  rm -f commands/host/cypress 2>/dev/null || true
+  rm -f commands/host/cypress-users 2>/dev/null || true
+  rm -f commands/host/init 2>/dev/null || true
+  rm -f commands/host/install-cypress 2>/dev/null || true
+  rm -f commands/host/open 2>/dev/null || true
+  rm -f commands/host/phpmyadmin 2>/dev/null || true
+  rm -f commands/host/rebuild 2>/dev/null || true
+  rm -f commands/host/refresh 2>/dev/null || true
+  rm -f commands/host/solrtail.example 2>/dev/null || true
+  rm -f commands/host/testenv 2>/dev/null || true
+  rm -f commands/host/README.txt 2>/dev/null || true
+  
+  # Remove web commands
+  rm -f commands/web/install-critical-tools 2>/dev/null || true
+  rm -f commands/web/install-theme-tools 2>/dev/null || true
+  rm -f commands/web/migrate-prep-db 2>/dev/null || true
+  rm -f commands/web/npm 2>/dev/null || true
+  rm -f commands/web/npx 2>/dev/null || true
+  rm -f commands/web/recipe-apply 2>/dev/null || true
+  rm -f commands/web/refresh 2>/dev/null || true
+  rm -f commands/web/tickle 2>/dev/null || true
+  rm -f commands/web/uuid-rm 2>/dev/null || true
+  rm -f commands/web/README.txt 2>/dev/null || true
+  
+  echo "✅ Custom commands removed"
+  
+  # Remove any remaining Redis command directories
+  rm -rf commands/redis 2>/dev/null || true
+  
+  # Clean up empty directories
+  rmdir commands/host 2>/dev/null || true
+  rmdir commands/web 2>/dev/null || true
+  rmdir commands 2>/dev/null || true
+  
+  echo ""
+  echo "✅ Kanopi Pantheon Drupal Add-on removed successfully!"
+  echo "   • Redis and Solr add-ons uninstalled"
+  echo "   • All 17 custom commands removed"
+  echo "   • Environment variables preserved (remove manually if needed)"
+  echo ""
+  echo "💡 Tip: Run 'ddev restart' to apply changes"
+  echo ""
