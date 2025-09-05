@@ -24,11 +24,8 @@ If you already have DDEV set up in your project:
 # Install the add-on (includes interactive configuration)
 ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
 
-# Configure your Pantheon machine token globally
-ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
-
 # Restart DDEV to apply changes
-ddev restart
+ddev init
 ```
 
 ### For Projects Without DDEV
