@@ -4,6 +4,7 @@ name: ddev-kanopi-pantheon-drupal
 project_files:
 - commands/
 - php/
+- nginx_full/
 
 # DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
@@ -201,6 +202,26 @@ post_install_actions:
   echo ""  
 
 - |
+  #ddev-nodisplay
+  #ddev-description: Update Nginx proxy configuration with Pantheon site values
+  echo "🔧 Updating Nginx proxy configuration..."
+  
+  # Get the environment variables from the config file
+  PANTHEON_SITE_VALUE=$(grep "PANTHEON_SITE=" ./config.yaml | sed 's/.*PANTHEON_SITE=\([^,]*\).*/\1/' | tr -d '"' || echo "")
+  PANTHEON_ENV_VALUE=$(grep "PANTHEON_ENV=" ./config.yaml | sed 's/.*PANTHEON_ENV=\([^,]*\).*/\1/' | tr -d '"' || echo "")
+  
+  if [ -n "$PANTHEON_SITE_VALUE" ] && [ -n "$PANTHEON_ENV_VALUE" ]; then
+    # Update the nginx configuration file with actual values
+    sed -i.bak "s/PANTHEON_ENV-PANTHEON_SITE/$PANTHEON_ENV_VALUE-$PANTHEON_SITE_VALUE/g" ./nginx_full/nginx-site.conf
+    echo "✅ Updated nginx proxy to redirect to: $PANTHEON_ENV_VALUE-$PANTHEON_SITE_VALUE.pantheonsite.io"
+  else
+    echo "⚠️  Could not retrieve PANTHEON_SITE and PANTHEON_ENV values from config for nginx configuration"
+    echo "    PANTHEON_SITE_VALUE: '$PANTHEON_SITE_VALUE'"
+    echo "    PANTHEON_ENV_VALUE: '$PANTHEON_ENV_VALUE'"
+  fi  
+
+
+- |
   #ddev-description: Install Redis add-on for all configurations
   # Install Redis add-on for all configurations
   echo ""
@@ -237,6 +258,7 @@ post_install_actions:
   echo "📦 Installed components:"
   echo "   • Enhanced Pantheon provider with smart backup management"
   echo "   • 17 custom commands for Drupal development workflow"
+  echo "   • Nginx proxy configuration so you dont have to download assets locally"
   echo "   • Theme development tools with Node.js/NPM support"
   echo "   • Cypress testing integration"
   echo "   • Drupal Recipe support"
@@ -328,9 +350,10 @@ removal_action:
   
   echo "✅ Custom commands removed"
   
-  # Remove PHP xdebug file.
+  # Remove PHP xdebug file and nginx config
   rm -f php/xdebug.ini 2>/dev/null || true
   rm -rf../xdebug 2>/dev/null || true
+  rm -f nginx_full/nginx-site.conf 2>/dev/null || true
   
   # Remove any remaining Redis command directories
   rm -rf commands/redis 2>/dev/null || true
@@ -344,6 +367,7 @@ removal_action:
   echo "✅ Kanopi Pantheon Drupal Add-on removed successfully!"
   echo "   • Redis and Solr add-ons uninstalled"
   echo "   • All 17 custom commands removed"
+  echo "   • Nginx proxy configuration removed"
   echo "   • Environment variables preserved (remove manually if needed)"
   echo ""
   echo "💡 Tip: Run 'ddev restart' to apply changes"

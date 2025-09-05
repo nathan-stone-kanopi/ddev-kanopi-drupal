@@ -6,6 +6,7 @@ A comprehensive DDEV add-on that provides Kanopi's battle-tested workflow for Dr
 
 - **🚀 Complete Development Workflow**: From project init to deployment
 - **🏛️ Enhanced Pantheon Integration**: Smart backup management and seamless database/file syncing
+- **🌐 Nginx Proxy Configuration**: Automatic proxy setup to Pantheon environment so you dont need to download assets.
 - **🧪 Cypress Testing Support**: E2E testing with user management
 - **🎨 Theme Development Tools**: Node.js/NPM integration with build tools
 - **📦 Drupal Recipe Support**: Apply Drupal 11 recipes with cache management
@@ -230,6 +231,7 @@ The removal process automatically:
 - ✅ Uninstalls Redis add-on (`ddev-redis`)
 - ✅ Uninstalls Solr add-on (`ddev-drupal-solr`) 
 - ✅ Removes all 17 custom commands
+- ✅ Removes nginx proxy configuration
 - ✅ Cleans up command directories
 - ✅ Preserves your environment variables (remove manually if needed)
 
