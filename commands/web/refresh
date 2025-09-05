@@ -186,4 +186,4 @@ echo -e "\nReset DB"
 drush sql-drop -y
 
 echo -e "\nImport DB"
-gunzip -c ${DB_DUMP} | drush sql-cli
+gunzip -c ${DB_DUMP} | $(drush sql:connect)
