@@ -17,3 +17,14 @@ ddev composer install
 
 # Database.
 ddev refresh
+
+echo "Clear cache"
+ddev drush cr -y
+
+echo "Update Drupal DB"
+ddev drush updatedb -y
+
+echo "Clear cache"
+ddev drush cr -y
+
+ddev cypress-users
