@@ -105,7 +105,7 @@ set -e
 ### Local Development
 ```bash
 # Test add-on installation
-ddev add-on get /path/to/ddev-kanopi-pantheon-drupal
+ddev add-on get /path/to/ddev-kanopi-drupal
 
 # Test removal
 ddev add-on remove kanopi-pantheon-drupal

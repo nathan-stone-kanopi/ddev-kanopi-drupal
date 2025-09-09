@@ -1,4 +1,4 @@
-name: ddev-kanopi-pantheon-drupal
+name: ddev-kanopi-drupal
 
 # Based on https://github.com/ddev/ddev/blob/HEAD/pkg/ddevapp/addons.go#L61
 project_files:

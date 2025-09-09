@@ -266,7 +266,7 @@ fi
 
 # Step 7: Test add-on removal
 printf "\n${YELLOW}🗑️  Testing add-on removal...${NC}\n"
-if ddev add-on remove ddev-kanopi-pantheon-drupal 2>/dev/null; then
+if ddev add-on remove ddev-kanopi-drupal 2>/dev/null; then
     printf "${GREEN}✅ Add-on removed successfully${NC}\n"
 else
     # Try alternative name patterns
