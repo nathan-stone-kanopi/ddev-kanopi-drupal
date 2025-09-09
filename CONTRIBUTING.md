@@ -6,24 +6,24 @@ Thank you for your interest in contributing to the DDEV Kanopi Pantheon Drupal a
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/kanopi/ddev-kanopi-pantheon-drupal.git
-   cd ddev-kanopi-pantheon-drupal
+   git clone https://github.com/kanopi/ddev-kanopi-drupal.git
+   cd ddev-kanopi-drupal
    ```
 
 2. **Test locally**:
    ```bash
    # Install the add-on locally for testing
-   ddev add-on get /path/to/ddev-kanopi-pantheon-drupal
+   ddev add-on get /path/to/ddev-kanopi-drupal
    
    # Or test with an existing project
    cd your-drupal-project
-   ddev add-on get /path/to/ddev-kanopi-pantheon-drupal
+   ddev add-on get /path/to/ddev-kanopi-drupal
    ```
 
 ## Project Structure
 
 ```
-ddev-kanopi-pantheon-drupal/
+ddev-kanopi-drupal/
 ├── install.yaml                   # Add-on installation configuration
 ├── README.md                      # Main documentation
 ├── CHANGELOG.md                   # Version history

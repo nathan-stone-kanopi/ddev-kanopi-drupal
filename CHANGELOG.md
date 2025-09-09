@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-01-08
 
 ### Added
-- Initial release of ddev-kanopi-pantheon-drupal add-on
+- Initial release of ddev-kanopi-drupal add-on
 - 17 custom DDEV commands for Drupal development workflow
 - Enhanced Pantheon provider with smart backup management
 - Complete theme development toolchain with Node.js/NPM support

@@ -212,7 +212,7 @@ ddev add-on list --installed
 ### Update the Add-on
 ```bash
 # Update to the latest version
-ddev add-on get kanopi/ddev-kanopi-pantheon-drupal
+ddev add-on get kanopi/ddev-kanopi-drupal
 ```
 
 ### Remove the Add-on
@@ -282,7 +282,7 @@ The test script will:
 
 ## Contributing
 
-This add-on is maintained by [Kanopi Studios](https://kanopi.com). For issues, feature requests, or contributions, please visit our [GitHub repository](https://github.com/kanopi/ddev-kanopi-pantheon-drupal).
+This add-on is maintained by [Kanopi Studios](https://kanopi.com). For issues, feature requests, or contributions, please visit our [GitHub repository](https://github.com/kanopi/ddev-kanopi-drupal).
 
 ## License
 
