@@ -226,24 +226,16 @@ post_install_actions:
   # Install Redis add-on for all configurations
   echo ""
   echo "📦 Installing Redis add-on..."
-  if ! timeout 180 ddev add-on get ddev/ddev-redis; then
-    echo "⚠️  Redis add-on installation failed or timed out"
-  else
-    echo "✅ Redis add-on installed successfully"
-    echo ""
-    echo "Ignore DDEV Redis settings file"
-    echo "settings.ddev.redis.php" >> ../.gitignore
-  fi
+  ddev add-on get ddev/ddev-redis  
+  echo ""
+  echo "Ignore DDEV Redis settings file"
+  echo "settings.ddev.redis.php" >> ../.gitignore
 - |
   #ddev-description: Install Solr add-on for search functionality
   # Install Solr add-on for search functionality
   echo ""
   echo "📦 Installing Solr add-on..."
-  if ! timeout 180 ddev add-on get ddev/ddev-drupal-solr; then
-    echo "⚠️  Solr add-on installation failed or timed out"
-  else
-    echo "✅ Solr add-on installed successfully"
-  fi
+  ddev add-on get ddev/ddev-drupal-solr
 - |
   #ddev-description: Setup xdebug output directory
   # Ignore xdebug output folder
