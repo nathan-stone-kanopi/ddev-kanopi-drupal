@@ -24,19 +24,13 @@ pre_install_actions:
   if ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
     echo "Using existing TERMINUS_MACHINE_TOKEN."
   else
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      echo "CI environment detected, using test token for TERMINUS_MACHINE_TOKEN"
-      token="test_token_for_ci"
-    else
-      printf "\n\nPlease enter your Pantheon Terminus machine token: "
-      read token
-    fi
+    printf "\n\nPlease enter your Pantheon Terminus machine token: "
   fi
 
 - |
   #ddev-nodisplay
   if !( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    read token
     # Put the token into the global web environment
     ddev config global --web-environment-add TERMINUS_MACHINE_TOKEN=${token}
     echo "TERMINUS_MACHINE_TOKEN set globally"
@@ -57,16 +51,10 @@ pre_install_actions:
   #ddev-nodisplay
   #ddev-description:Set THEME
   if !( {{ contains "THEME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      THEME_PATH="themes/custom/testtheme"
-      echo "CI environment detected, using default theme path: $THEME_PATH"
-    else
-      read THEME_PATH
-      if [ -z "$THEME_PATH" ]; then
-        THEME_PATH="themes/custom/themename"
-        echo "⚠️  Using default theme path: $THEME_PATH"
-      fi
+    read THEME_PATH
+    if [ -z "$THEME_PATH" ]; then
+      THEME_PATH="themes/custom/themename"
+      echo "⚠️  Using default theme path: $THEME_PATH"
     fi
     echo "THEME = '${THEME_PATH}'"
     ddev config --web-environment-add THEME=${THEME_PATH}
@@ -87,16 +75,10 @@ pre_install_actions:
   #ddev-nodisplay
   #ddev-description:Set THEMENAME
   if !( {{ contains "THEMENAME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      THEME_NAME="testtheme"
-      echo "CI environment detected, using default theme name: $THEME_NAME"
-    else
-      read THEME_NAME
-      if [ -z "$THEME_NAME" ]; then
-        THEME_NAME="themename"
-        echo "⚠️  Using default theme name: $THEME_NAME"
-      fi
+    read THEME_NAME
+    if [ -z "$THEME_NAME" ]; then
+      THEME_NAME="themename"
+      echo "⚠️  Using default theme name: $THEME_NAME"
     fi
     echo "THEMENAME = '${THEME_NAME}'"
     ddev config --web-environment-add THEMENAME=${THEME_NAME}

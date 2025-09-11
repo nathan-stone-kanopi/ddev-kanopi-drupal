@@ -19,5 +19,6 @@ test-install/
 test-manual/
 test/test-install/
 test/test-manual/
+tests/lib/
 
 .claude*
