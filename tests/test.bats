@@ -1,9 +1,13 @@
 #!/usr/bin/env bats
 
-# Load bats libraries using load directive
-load "lib/bats-support/load"
-load "lib/bats-assert/load"
-load "lib/bats-file/load"
+# Set up library path for bats libraries (system and brew locations)
+TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || echo /home/linuxbrew/.linuxbrew)"
+export BATS_LIB_PATH="${BATS_LIB_PATH}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
+
+# Load bats libraries
+bats_load_library bats-support
+bats_load_library bats-assert
+bats_load_library bats-file
 
 # Set up test variables
 export TEST_PROJECT_NAME=test-kanopi-addon
