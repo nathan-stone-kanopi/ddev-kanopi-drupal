@@ -542,14 +542,23 @@ ddev refresh -f
 
 ## Testing
 
-This add-on includes two complementary testing approaches:
+This add-on uses the official DDEV testing framework combined with comprehensive integration testing:
 
-### 1. Comprehensive Integration Testing (Recommended)
+### 1. Automated CI/CD Testing
 
-Run the comprehensive test script that uses real Drupal and tests the complete installation workflow:
+The add-on is automatically tested using the official DDEV add-on testing framework:
+
+- **GitHub Actions**: Tests run on every push and pull request
+- **Matrix Testing**: Validates against both stable and HEAD DDEV versions  
+- **Official Framework**: Uses `ddev/github-action-add-on-test@v2`
+- **Reliable & Fast**: Proven testing patterns from the DDEV team
+
+### 2. Local Development Testing
+
+For local development and debugging, use the comprehensive integration test:
 
 ```bash
-# Run the comprehensive integration test
+# Run comprehensive integration test
 ./test-install.sh
 ```
 
@@ -568,50 +577,46 @@ Run the comprehensive test script that uses real Drupal and tests the complete i
 - ❌ Fail: Issues found (test environment preserved for debugging)
 - 🔍 Debug: Use provided commands to inspect the test environment
 
-### 2. Bats Unit Testing (CI/CD)
+### 3. Component Testing
 
-Run standardized bats tests for faster validation and CI/CD integration:
+For testing specific functionality during development:
 
 ```bash
 # Install bats if not already installed
 # macOS: brew install bats-core
 # Linux: See https://bats-core.readthedocs.io/en/stable/installation.html
 
-# Run bats tests
+# Run component tests
 bats tests/test.bats
 ```
 
-**What bats tests cover:**
-- ✅ Add-on installation from directory and GitHub release
-- ✅ Environment variable configuration
-- ✅ Custom command availability and functionality
-- ✅ Redis and Solr integration
-- ✅ pantheon.yml version detection and application
-- ✅ Add-on removal and cleanup
+### Testing Strategy
 
-### Testing in CI/CD
+| Test Level | Purpose | When to Use |
+|------------|---------|-------------|
+| **GitHub Actions** | Automated validation | Every push/PR |
+| **Integration Test** | Comprehensive workflow | Local development, debugging |
+| **Bats Tests** | Component functionality | Feature development |
 
-For automated testing in CI/CD pipelines, use the bats tests:
+### Debugging Failed Tests
 
-```yaml
-# GitHub Actions example
-- name: Test DDEV Add-on
-  run: |
-    bats tests/test.bats
-```
-
-### Local Development Testing
-
-For local development and debugging, use the comprehensive shell test:
+If the integration test fails, inspect the preserved environment:
 
 ```bash
-# Run comprehensive test with debugging
-./test-install.sh
-
-# If tests fail, inspect the preserved environment:
+# Navigate to test environment
 cd test/test-install/drupal
+
+# Check DDEV status
 ddev describe
+
+# Verify environment variables
 ddev exec env | grep -E "(THEME|PANTHEON)"
+
+# Check installed add-ons
+ddev add-on list --installed
+
+# Cleanup when done
+ddev delete -Oy test-kanopi-addon && cd ../.. && rm -rf test/
 ```
 
 ## Contributing

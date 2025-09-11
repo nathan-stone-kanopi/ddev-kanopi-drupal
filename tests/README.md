@@ -1,6 +1,6 @@
 # Testing the DDEV Kanopi Drupal Add-on
 
-This directory contains bats tests for standardized testing of the DDEV Kanopi Drupal Add-on. These tests complement the comprehensive integration testing provided by the root-level `test-install.sh` script.
+This directory contains bats tests for standardized testing of the DDEV Kanopi Drupal Add-on. The project uses the official DDEV add-on testing framework combined with comprehensive integration testing.
 
 ## Test Files
 
@@ -69,31 +69,31 @@ bats tests/test.bats --formatter tap
 - ✅ File and service cleanup
 - ✅ Command removal verification
 
-## Test vs Integration Testing
+## Testing Strategy
 
-| Feature | Bats Tests (`tests/test.bats`) | Integration Test (`../test-install.sh`) |
-|---------|-------------------------------|----------------------------------------|
-| **Speed** | Fast (~2-5 minutes) | Slower (~10-15 minutes) |
-| **Scope** | Unit/component testing | Full end-to-end workflow |
-| **Drupal** | Minimal structure | Real Drupal from git.drupalcode.org |
-| **Interactive** | Simulated responses | Automated interactive prompts |
-| **CI/CD** | Ideal for automation | Better for local debugging |
-| **Debugging** | Basic assertions | Preserved environment for inspection |
-| **Coverage** | Core functionality | Complete installation workflow |
+| Test Type | Method | Purpose | When to Use |
+|-----------|--------|---------|-------------|
+| **Official DDEV Testing** | `ddev/github-action-add-on-test@v2` | Standard add-on validation | CI/CD, Pull requests |
+| **Bats Tests** | `tests/test.bats` | Component/functionality testing | Local development, debugging |
+| **Integration Tests** | `../test-install.sh` | End-to-end workflow testing | Release validation, troubleshooting |
 
-## When to Use Each
+### Official DDEV Testing (Primary)
+- ✅ **Standardized** - Uses official DDEV testing framework
+- ✅ **Reliable** - Proven patterns from DDEV team
+- ✅ **Fast** - Optimized for CI/CD environments
+- ✅ **Matrix testing** - Tests against stable and HEAD DDEV versions
+- ✅ **Debug support** - Built-in debugging capabilities
 
-### Use Bats Tests For:
-- ✅ **CI/CD pipelines** - Fast, reliable, standardized
-- ✅ **Pull request validation** - Quick verification of changes
-- ✅ **Component testing** - Testing specific features
-- ✅ **Cross-platform testing** - Linux/macOS compatibility
+### Bats Tests (Development)
+- ✅ **Local testing** - Run specific functionality tests
+- ✅ **Component testing** - Test individual features
+- ✅ **Development debugging** - Quick validation during development
 
-### Use Integration Tests For:
-- ✅ **Local development** - Comprehensive testing with real Drupal
-- ✅ **Debugging installations** - Preserved environment for inspection  
-- ✅ **Release validation** - Full workflow testing before releases
-- ✅ **Interactive prompt testing** - Validates the actual user experience
+### Integration Tests (Comprehensive)
+- ✅ **Full workflow** - Complete installation and configuration testing
+- ✅ **Real Drupal** - Uses actual Drupal from git.drupalcode.org
+- ✅ **Interactive testing** - Validates user experience with automated responses
+- ✅ **Environment preservation** - Keeps test environment for debugging
 
 ## Customizing Tests
 

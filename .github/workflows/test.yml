@@ -5,201 +5,83 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '25 08 * * *'
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Enable debug mode'
+        required: false
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        ddev_version: ["v1.22", "stable"]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install DDEV
-      run: |
-        # Install DDEV using the official installer
-        curl -fsSL https://ddev.com/install.sh | bash
-        
-        # Add to PATH for this session and make immediately available
-        echo "$HOME/.ddev/bin" >> $GITHUB_PATH
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # Verify DDEV installation
-        $HOME/.ddev/bin/ddev version
-        
-        # Check if we want a specific version
-        if [ "${{ matrix.ddev_version }}" != "stable" ]; then
-          echo "Testing with DDEV version: ${{ matrix.ddev_version }}"
-          # Note: Version switching would require additional setup
-        fi
-
-    - name: Install Bats
-      run: |
-        # Install bats-core and dependencies
-        sudo apt-get update
-        sudo apt-get install -y bats
-        
-        # Verify bats installation
-        bats --version
-
-    - name: Set up Docker
-      run: |
-        # DDEV requires Docker - it should already be available in GitHub Actions
-        docker --version
-        docker-compose --version
-
-    - name: Configure DDEV
-      run: |
-        # Configure DDEV for CI environment
-        mkdir -p ~/.ddev
-        echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
-        echo "omit_containers: [ddev-ssh-agent]" >> ~/.ddev/global_config.yaml
-        echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
-        echo "router_bind_all_interfaces: true" >> ~/.ddev/global_config.yaml
-        
-        # Use absolute path for DDEV commands until PATH is fully available
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # Set up global test token (dummy token for testing)
-        $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
-
-    - name: Debug Environment
-      run: |
-        echo "=== Environment Debug ==="
-        echo "PATH: $PATH"
-        echo "HOME: $HOME"
-        echo "DDEV location: $(which ddev || echo 'not in PATH')"
-        echo "DDEV direct path: $HOME/.ddev/bin/ddev"
-        ls -la $HOME/.ddev/bin/ || echo "DDEV bin directory not found"
-        echo "Bats location: $(which bats || echo 'not in PATH')"
-        echo "Docker: $(docker --version)"
-        echo "Current directory: $(pwd)"
-        ls -la tests/ || echo "tests directory not found"
-
-    - name: Run Bats Tests
-      run: |
-        # Ensure PATH includes DDEV
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # Debug DDEV availability
-        echo "Testing DDEV availability..."
-        ddev version || echo "DDEV not available in PATH"
-        
-        # Run the simple bats test suite first
-        echo "Running simple bats tests..."
-        bats --version
-        bats tests/simple.bats --verbose-run || {
-          echo "Bats tests failed. Here's some debug info:"
-          echo "Test directory contents:"
-          ls -la tests/
-          echo "DDEV status:"
-          ddev list || echo "DDEV list failed"
-          exit 1
-        }
-
-    - name: Run Integration Tests (if bats passes)
-      if: success()
-      run: |
-        # Run the comprehensive shell test
-        # Set up non-interactive mode for CI
-        export CI=true
-        export GITHUB_ACTIONS=true
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # The shell test should detect CI environment and skip interactive prompts
-        echo "Running integration tests..."
-        ./test-install.sh || {
-          echo "Integration tests failed. Debug info:"
-          echo "DDEV projects:"
-          ddev list || echo "DDEV list failed"
-          echo "Test directory:"
-          ls -la test/ || echo "test directory not found"
-          exit 1
-        }
-
-    - name: Upload test artifacts
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: test-results-${{ matrix.ddev_version }}
-        path: |
-          test/test-install/*
-          ${{ github.workspace }}/test/test-install/*
-          /home/runner/.ddev/testdata/*
-        if-no-files-found: ignore
-        retention-days: 3
-
-  # Optional: Test on multiple platforms (Linux focus for reliability)
-  test-multiplatform:
-    runs-on: ${{ matrix.os }}
-    
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        # Note: macOS requires Docker Desktop which adds ~5-10 minutes to CI time
-        # To enable macOS testing, add 'macos-latest' to the matrix and uncomment 
-        # the macOS-specific steps below
-        # Note: Windows testing requires additional WSL2/Docker setup
+        ddev-version: [stable, HEAD]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Environment setup
+        run: |
+          # Configure DDEV environment for add-on testing
+          mkdir -p ~/.ddev
+          echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
+          echo "omit_containers: [ddev-ssh-agent]" >> ~/.ddev/global_config.yaml
+          echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
+          echo "router_bind_all_interfaces: true" >> ~/.ddev/global_config.yaml
+          
+          # Set up dummy Terminus token for testing
+          echo "web_environment:" >> ~/.ddev/global_config.yaml
+          echo "  - TERMINUS_MACHINE_TOKEN=test_token_for_ci" >> ~/.ddev/global_config.yaml
+
+      - uses: ddev/github-action-add-on-test@v2
+        with:
+          ddev_version: ${{ matrix.ddev-version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          debug: ${{ github.event.inputs.debug_enabled }}
+          addon_repository: ${{ env.GITHUB_REPOSITORY }}
+          addon_ref: ${{ env.GITHUB_SHA }}
+
+  # Custom integration test using our comprehensive test script
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test # Run after the standard test passes
+    if: success()
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install DDEV
-      run: |
-        # Install DDEV using the official installer (Linux)
-        curl -fsSL https://ddev.com/install.sh | bash
-        echo "$HOME/.ddev/bin" >> $GITHUB_PATH
-        export PATH="$HOME/.ddev/bin:$PATH"
-        $HOME/.ddev/bin/ddev version
-
-    - name: Install Bats
-      run: |
-        # Install bats-core (Linux only in this matrix)
-        sudo apt-get update
-        sudo apt-get install -y bats
-        bats --version
-
-    - name: Configure DDEV
-      run: |
-        mkdir -p ~/.ddev
-        echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
-        echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
-        
-        # Ensure PATH includes DDEV
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # Set dummy Terminus token for testing (Linux)
-        $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
-
-    - name: Run Bats Tests Only (Multi-platform)
-      run: |
-        # Ensure PATH includes DDEV
-        export PATH="$HOME/.ddev/bin:$PATH"
-        
-        # Run simple bats tests only for multi-platform (faster)
-        bats tests/simple.bats
-
-    # Uncomment below for macOS testing (requires matrix: os: [ubuntu-latest, macos-latest])
-    #
-    # - name: Setup Docker (macOS)
-    #   if: runner.os == 'macOS'
-    #   run: |
-    #     # Install and start Docker Desktop (adds 5-10 minutes to CI time)
-    #     brew install --cask docker
-    #     sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended &
-    #     timeout 300 bash -c 'until docker info >/dev/null 2>&1; do sleep 10; done'
-    #
-    # - name: Install DDEV (macOS)
-    #   if: runner.os == 'macOS'  
-    #   run: |
-    #     brew install ddev/ddev/ddev
-    #     brew install mkcert && mkcert -install
-    #
-    # - name: Install Bats (macOS)
-    #   if: runner.os == 'macOS'
-    #   run: brew install bats-core
+      - uses: actions/checkout@v4
+      
+      - name: Install DDEV
+        run: |
+          curl -fsSL https://ddev.com/install.sh | bash
+          echo "$HOME/.ddev/bin" >> $GITHUB_PATH
+          
+      - name: Configure DDEV for integration test
+        run: |
+          mkdir -p ~/.ddev
+          echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
+          echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
+          echo "web_environment:" >> ~/.ddev/global_config.yaml
+          echo "  - TERMINUS_MACHINE_TOKEN=test_token_for_ci" >> ~/.ddev/global_config.yaml
+          
+      - name: Run comprehensive integration test
+        run: |
+          export CI=true
+          export GITHUB_ACTIONS=true
+          export PATH="$HOME/.ddev/bin:$PATH"
+          
+          # Run our comprehensive test script
+          ./test-install.sh
