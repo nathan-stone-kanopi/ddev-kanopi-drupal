@@ -1,0 +1,142 @@
+name: Test DDEV Kanopi Drupal Add-on
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        ddev_version: ["v1.22", "stable"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install DDEV
+      run: |
+        # Install DDEV using the official installer
+        curl -fsSL https://ddev.com/install.sh | bash
+        
+        # Add to PATH for this session
+        echo "$HOME/.ddev/bin" >> $GITHUB_PATH
+        
+        # Check if we want a specific version
+        if [ "${{ matrix.ddev_version }}" != "stable" ]; then
+          ddev version
+          # Note: Version switching would require additional setup
+        fi
+
+    - name: Install Bats
+      run: |
+        # Install bats-core and dependencies
+        sudo apt-get update
+        sudo apt-get install -y bats
+        
+        # Verify bats installation
+        bats --version
+
+    - name: Set up Docker
+      run: |
+        # DDEV requires Docker - it should already be available in GitHub Actions
+        docker --version
+        docker-compose --version
+
+    - name: Configure DDEV
+      run: |
+        # Configure DDEV for CI environment
+        mkdir -p ~/.ddev
+        echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
+        echo "omit_containers: [ddev-ssh-agent]" >> ~/.ddev/global_config.yaml
+        echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
+        echo "router_bind_all_interfaces: true" >> ~/.ddev/global_config.yaml
+        
+        # Set up global test token (dummy token for testing)
+        ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+
+    - name: Run Bats Tests
+      run: |
+        # Run the bats test suite
+        bats tests/test.bats
+
+    - name: Run Integration Tests (if bats passes)
+      if: success()
+      run: |
+        # Run the comprehensive shell test
+        # Set up non-interactive mode for CI
+        export CI=true
+        export GITHUB_ACTIONS=true
+        
+        # The shell test should detect CI environment and skip interactive prompts
+        ./test-install.sh
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: test-results-${{ matrix.ddev_version }}
+        path: |
+          test/test-install/
+          ~/.ddev/testdata/
+        retention-days: 3
+
+  # Optional: Test on multiple platforms
+  test-multiplatform:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # Note: Windows testing requires additional setup for DDEV
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install DDEV (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        # Install DDEV via Homebrew on macOS
+        brew install ddev/ddev/ddev
+        
+        # Install mkcert for SSL
+        brew install mkcert
+        mkcert -install
+
+    - name: Install DDEV (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        # Install DDEV using the official installer
+        curl -fsSL https://ddev.com/install.sh | bash
+        echo "$HOME/.ddev/bin" >> $GITHUB_PATH
+
+    - name: Install Bats
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          brew install bats-core
+        else
+          sudo apt-get update
+          sudo apt-get install -y bats
+        fi
+        
+        bats --version
+
+    - name: Configure DDEV
+      run: |
+        mkdir -p ~/.ddev
+        echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
+        echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
+        
+        # Set dummy Terminus token for testing
+        ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+
+    - name: Run Bats Tests Only (Multi-platform)
+      run: |
+        # Run bats tests only for multi-platform (faster)
+        bats tests/test.bats
