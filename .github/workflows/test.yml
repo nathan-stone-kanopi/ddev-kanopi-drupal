@@ -132,34 +132,26 @@ jobs:
         if-no-files-found: ignore
         retention-days: 3
 
-  # Optional: Test on multiple platforms
+  # Optional: Test on multiple platforms (Linux focus for reliability)
   test-multiplatform:
     runs-on: ${{ matrix.os }}
     
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        # Note: Windows testing requires additional setup for DDEV
+        os: [ubuntu-latest]
+        # Note: macOS requires Docker Desktop which adds ~5-10 minutes to CI time
+        # To enable macOS testing, add 'macos-latest' to the matrix and uncomment 
+        # the macOS-specific steps below
+        # Note: Windows testing requires additional WSL2/Docker setup
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install DDEV (macOS)
-      if: runner.os == 'macOS'
+    - name: Install DDEV
       run: |
-        # Install DDEV via Homebrew on macOS
-        brew install ddev/ddev/ddev
-        
-        # Install mkcert for SSL
-        brew install mkcert
-        mkcert -install
-
-    - name: Install DDEV (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        # Install DDEV using the official installer
+        # Install DDEV using the official installer (Linux)
         curl -fsSL https://ddev.com/install.sh | bash
         echo "$HOME/.ddev/bin" >> $GITHUB_PATH
         export PATH="$HOME/.ddev/bin:$PATH"
@@ -167,13 +159,9 @@ jobs:
 
     - name: Install Bats
       run: |
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          brew install bats-core
-        else
-          sudo apt-get update
-          sudo apt-get install -y bats
-        fi
-        
+        # Install bats-core (Linux only in this matrix)
+        sudo apt-get update
+        sudo apt-get install -y bats
         bats --version
 
     - name: Configure DDEV
@@ -185,12 +173,8 @@ jobs:
         # Ensure PATH includes DDEV
         export PATH="$HOME/.ddev/bin:$PATH"
         
-        # Set dummy Terminus token for testing
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
-        else
-          $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
-        fi
+        # Set dummy Terminus token for testing (Linux)
+        $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
 
     - name: Run Bats Tests Only (Multi-platform)
       run: |
@@ -199,3 +183,23 @@ jobs:
         
         # Run simple bats tests only for multi-platform (faster)
         bats tests/simple.bats
+
+    # Uncomment below for macOS testing (requires matrix: os: [ubuntu-latest, macos-latest])
+    #
+    # - name: Setup Docker (macOS)
+    #   if: runner.os == 'macOS'
+    #   run: |
+    #     # Install and start Docker Desktop (adds 5-10 minutes to CI time)
+    #     brew install --cask docker
+    #     sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended &
+    #     timeout 300 bash -c 'until docker info >/dev/null 2>&1; do sleep 10; done'
+    #
+    # - name: Install DDEV (macOS)
+    #   if: runner.os == 'macOS'  
+    #   run: |
+    #     brew install ddev/ddev/ddev
+    #     brew install mkcert && mkcert -install
+    #
+    # - name: Install Bats (macOS)
+    #   if: runner.os == 'macOS'
+    #   run: brew install bats-core
