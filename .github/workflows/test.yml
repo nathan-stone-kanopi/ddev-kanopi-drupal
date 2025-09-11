@@ -51,9 +51,9 @@ jobs:
         with:
           ddev_version: ${{ matrix.ddev-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          debug: ${{ github.event.inputs.debug_enabled }}
-          addon_repository: ${{ env.GITHUB_REPOSITORY }}
-          addon_ref: ${{ env.GITHUB_SHA }}
+          addon_repository: ${{ github.repository }}
+          addon_ref: ${{ github.ref }}
+          debug_enabled: ${{ github.event.inputs.debug_enabled }}
 
   # Custom integration test using our comprehensive test script
   integration-test:
