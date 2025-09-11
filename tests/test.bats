@@ -21,9 +21,20 @@ export TEST_MIGRATE_ENV="live"
 
 setup() {
     set -eu -o pipefail
+    
+    # Skip if DDEV not available
+    skip_if_no_ddev
+    
+    # Create test directory
+    mkdir -p "${TESTDIR}"
     cd "${TESTDIR}"
+    
+    # Clean up any existing test project
     ddev delete -Oy ${PROJNAME} >/dev/null 2>&1 || true
     [[ ! -d "${PROJNAME}" ]] || rm -rf ${PROJNAME}
+    
+    # Wait a moment for cleanup
+    sleep 2
 }
 
 health_checks() {

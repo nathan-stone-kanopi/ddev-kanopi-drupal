@@ -13,17 +13,26 @@ mkdir -p ${TESTDATA_DIR}
 # Make sure we have the bats helpers available
 if [ ! -d "${TESTDATA_DIR}/bats-support" ]; then
   echo "# Installing bats-support"
-  git clone --depth 1 https://github.com/bats-core/bats-support "${TESTDATA_DIR}/bats-support"
+  git clone --quiet --depth 1 https://github.com/bats-core/bats-support "${TESTDATA_DIR}/bats-support"
 fi
 
 if [ ! -d "${TESTDATA_DIR}/bats-assert" ]; then
   echo "# Installing bats-assert"
-  git clone --depth 1 https://github.com/bats-core/bats-assert "${TESTDATA_DIR}/bats-assert"
+  git clone --quiet --depth 1 https://github.com/bats-core/bats-assert "${TESTDATA_DIR}/bats-assert"
 fi
 
 # Load bats assertion and support libraries
-load "${TESTDATA_DIR}/bats-support/load"
-load "${TESTDATA_DIR}/bats-assert/load"
+if [ -f "${TESTDATA_DIR}/bats-support/load.bash" ]; then
+    load "${TESTDATA_DIR}/bats-support/load"
+elif [ -f "${TESTDATA_DIR}/bats-support/load" ]; then
+    load "${TESTDATA_DIR}/bats-support/load"
+fi
+
+if [ -f "${TESTDATA_DIR}/bats-assert/load.bash" ]; then
+    load "${TESTDATA_DIR}/bats-assert/load"
+elif [ -f "${TESTDATA_DIR}/bats-assert/load" ]; then
+    load "${TESTDATA_DIR}/bats-assert/load"
+fi
 
 # Helper function to skip tests on unsupported platforms
 skip_if_no_ddev() {

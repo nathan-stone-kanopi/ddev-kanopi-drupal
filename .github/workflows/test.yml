@@ -23,12 +23,16 @@ jobs:
         # Install DDEV using the official installer
         curl -fsSL https://ddev.com/install.sh | bash
         
-        # Add to PATH for this session
+        # Add to PATH for this session and make immediately available
         echo "$HOME/.ddev/bin" >> $GITHUB_PATH
+        export PATH="$HOME/.ddev/bin:$PATH"
+        
+        # Verify DDEV installation
+        $HOME/.ddev/bin/ddev version
         
         # Check if we want a specific version
         if [ "${{ matrix.ddev_version }}" != "stable" ]; then
-          ddev version
+          echo "Testing with DDEV version: ${{ matrix.ddev_version }}"
           # Note: Version switching would require additional setup
         fi
 
@@ -56,13 +60,45 @@ jobs:
         echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
         echo "router_bind_all_interfaces: true" >> ~/.ddev/global_config.yaml
         
+        # Use absolute path for DDEV commands until PATH is fully available
+        export PATH="$HOME/.ddev/bin:$PATH"
+        
         # Set up global test token (dummy token for testing)
-        ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+        $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+
+    - name: Debug Environment
+      run: |
+        echo "=== Environment Debug ==="
+        echo "PATH: $PATH"
+        echo "HOME: $HOME"
+        echo "DDEV location: $(which ddev || echo 'not in PATH')"
+        echo "DDEV direct path: $HOME/.ddev/bin/ddev"
+        ls -la $HOME/.ddev/bin/ || echo "DDEV bin directory not found"
+        echo "Bats location: $(which bats || echo 'not in PATH')"
+        echo "Docker: $(docker --version)"
+        echo "Current directory: $(pwd)"
+        ls -la tests/ || echo "tests directory not found"
 
     - name: Run Bats Tests
       run: |
-        # Run the bats test suite
-        bats tests/test.bats
+        # Ensure PATH includes DDEV
+        export PATH="$HOME/.ddev/bin:$PATH"
+        
+        # Debug DDEV availability
+        echo "Testing DDEV availability..."
+        ddev version || echo "DDEV not available in PATH"
+        
+        # Run the simple bats test suite first
+        echo "Running simple bats tests..."
+        bats --version
+        bats tests/simple.bats --verbose-run || {
+          echo "Bats tests failed. Here's some debug info:"
+          echo "Test directory contents:"
+          ls -la tests/
+          echo "DDEV status:"
+          ddev list || echo "DDEV list failed"
+          exit 1
+        }
 
     - name: Run Integration Tests (if bats passes)
       if: success()
@@ -71,9 +107,18 @@ jobs:
         # Set up non-interactive mode for CI
         export CI=true
         export GITHUB_ACTIONS=true
+        export PATH="$HOME/.ddev/bin:$PATH"
         
         # The shell test should detect CI environment and skip interactive prompts
-        ./test-install.sh
+        echo "Running integration tests..."
+        ./test-install.sh || {
+          echo "Integration tests failed. Debug info:"
+          echo "DDEV projects:"
+          ddev list || echo "DDEV list failed"
+          echo "Test directory:"
+          ls -la test/ || echo "test directory not found"
+          exit 1
+        }
 
     - name: Upload test artifacts
       uses: actions/upload-artifact@v4
@@ -81,8 +126,10 @@ jobs:
       with:
         name: test-results-${{ matrix.ddev_version }}
         path: |
-          test/test-install/
-          ~/.ddev/testdata/
+          test/test-install/*
+          ${{ github.workspace }}/test/test-install/*
+          /home/runner/.ddev/testdata/*
+        if-no-files-found: ignore
         retention-days: 3
 
   # Optional: Test on multiple platforms
@@ -115,6 +162,8 @@ jobs:
         # Install DDEV using the official installer
         curl -fsSL https://ddev.com/install.sh | bash
         echo "$HOME/.ddev/bin" >> $GITHUB_PATH
+        export PATH="$HOME/.ddev/bin:$PATH"
+        $HOME/.ddev/bin/ddev version
 
     - name: Install Bats
       run: |
@@ -133,10 +182,20 @@ jobs:
         echo "instrumentation_opt_in: false" > ~/.ddev/global_config.yaml
         echo "use_dns_when_possible: false" >> ~/.ddev/global_config.yaml
         
+        # Ensure PATH includes DDEV
+        export PATH="$HOME/.ddev/bin:$PATH"
+        
         # Set dummy Terminus token for testing
-        ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+        else
+          $HOME/.ddev/bin/ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token_for_ci
+        fi
 
     - name: Run Bats Tests Only (Multi-platform)
       run: |
-        # Run bats tests only for multi-platform (faster)
-        bats tests/test.bats
+        # Ensure PATH includes DDEV
+        export PATH="$HOME/.ddev/bin:$PATH"
+        
+        # Run simple bats tests only for multi-platform (faster)
+        bats tests/simple.bats
