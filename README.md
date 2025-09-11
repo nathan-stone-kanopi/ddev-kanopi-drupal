@@ -559,7 +559,7 @@ For local development and debugging, use the comprehensive integration test:
 
 ```bash
 # Run comprehensive integration test
-./test-install.sh
+./tests/test-install.sh
 ```
 
 **What this test does:**

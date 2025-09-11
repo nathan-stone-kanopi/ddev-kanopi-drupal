@@ -24,8 +24,8 @@ TEST_PANTHEON_ENV="dev"  # CI mode defaults to dev
 TEST_MIGRATE_SOURCE="test-migration-source"  # CI mode uses this value
 TEST_MIGRATE_ENV="live"
 
-# Get the absolute path to the add-on directory
-ADDON_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the absolute path to the add-on directory (script is now in tests/ subdirectory)
+ADDON_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEST_DIR="${ADDON_PATH}/test/test-install"
 DRUPAL_DIR="${TEST_DIR}/drupal"
 TEST_PROJECT="test-kanopi-addon"
@@ -70,7 +70,7 @@ printf "${GREEN}✅ Drupal cloned successfully${NC}\n"
 cd drupal
 
 # Copy pantheon.yml from test directory to drupal root
-cp "${ADDON_PATH}/test/pantheon.yml" ./pantheon.yml
+cp "${ADDON_PATH}/tests/pantheon.yml" ./pantheon.yml
 printf "${GREEN}✅ Copied pantheon.yml to Drupal project${NC}\n"
 
 # Extract expected versions from pantheon.yml

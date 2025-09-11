@@ -75,7 +75,7 @@ bats tests/test.bats --formatter tap
 |-----------|--------|---------|-------------|
 | **Official DDEV Testing** | `ddev/github-action-add-on-test@v2` | Standard add-on validation | CI/CD, Pull requests |
 | **Bats Tests** | `tests/test.bats` | Component/functionality testing | Local development, debugging |
-| **Integration Tests** | `../test-install.sh` | End-to-end workflow testing | Release validation, troubleshooting |
+| **Integration Tests** | `./test-install.sh` | End-to-end workflow testing | Release validation, troubleshooting |
 
 ### Official DDEV Testing (Primary)
 - ✅ **Standardized** - Uses official DDEV testing framework

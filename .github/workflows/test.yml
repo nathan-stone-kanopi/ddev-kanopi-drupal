@@ -84,4 +84,4 @@ jobs:
           export PATH="$HOME/.ddev/bin:$PATH"
           
           # Run our comprehensive test script
-          ./test-install.sh
+          ./tests/test-install.sh
