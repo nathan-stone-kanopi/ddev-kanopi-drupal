@@ -5,7 +5,8 @@ This directory contains bats tests for standardized testing of the DDEV Kanopi D
 ## Test Files
 
 - `test.bats` - Main bats test suite with installation, configuration, and functionality tests
-- `test_helper.bash` - Helper functions and setup for bats tests
+- `test-install.sh` - Comprehensive integration test script
+- `pantheon.yml` - Test configuration file for version validation
 - `README.md` - This documentation
 
 ## Running the Tests

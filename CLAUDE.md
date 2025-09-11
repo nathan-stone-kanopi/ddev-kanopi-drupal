@@ -111,13 +111,34 @@ ddev add-on get /path/to/ddev-kanopi-drupal
 ddev add-on remove kanopi-pantheon-drupal
 ```
 
+### Testing Framework
+The project includes comprehensive testing:
+
+#### Official DDEV Testing (CI)
+Uses `ddev/github-action-add-on-test@v2` for standardized add-on validation in GitHub Actions.
+
+#### Bats Tests (Component Testing)
+```bash
+# Run bats tests locally
+bats tests/test.bats
+
+# Run specific test
+bats tests/test.bats --filter "install from directory"
+```
+
+#### Integration Testing (End-to-End)
+```bash
+# Run comprehensive integration test
+./tests/test-install.sh
+```
+
 ### Required Setup
 1. Configure Pantheon machine token globally:
    ```bash
    ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
    ```
 
-2. The add-on installation now includes interactive prompts for:
+2. The add-on installation includes interactive prompts for:
    - **THEME**: Path to active Drupal theme (e.g., `themes/custom/mytheme`)
    - **THEMENAME**: Theme name for development tools
    - **PANTHEON_SITE**: Pantheon project machine name (required)
@@ -137,4 +158,11 @@ The add-on automatically installs and configures:
 - Terminus for Pantheon API access
 - Theme development tools (Node.js, NPM)
 - Critical CSS generation tools
-- after making changes to the install file always test it
+- Redis add-on for caching
+- Solr add-on for search functionality
+
+## Testing Notes
+- Always test changes to install.yaml thoroughly
+- Use bats tests for quick validation during development
+- Run integration tests before major releases
+- Tests pre-configure environment variables to avoid interactive prompts
