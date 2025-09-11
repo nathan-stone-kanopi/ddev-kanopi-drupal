@@ -16,9 +16,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 BOLD='\033[1m'
 
-# Test configuration values - updated to match CI values from install.yaml
-TEST_THEME="themes/custom/testtheme"  # CI mode uses simplified theme name
-TEST_THEMENAME="testtheme"  # CI mode uses the site name as theme name
+# Test configuration values - correct expected format
+TEST_THEME="themes/custom/testtheme"  # THEME should be the path to the theme
+TEST_THEMENAME="testtheme"  # THEMENAME should be just the theme name
 TEST_PANTHEON_SITE="test-site-123"
 TEST_PANTHEON_ENV="dev"  # CI mode defaults to dev
 TEST_MIGRATE_SOURCE="test-migration-source"  # CI mode uses this value

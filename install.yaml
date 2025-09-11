@@ -51,10 +51,16 @@ pre_install_actions:
   #ddev-nodisplay
   #ddev-description:Set THEME
   if !( {{ contains "THEME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    read THEME_PATH
-    if [ -z "$THEME_PATH" ]; then
-      THEME_PATH="themes/custom/themename"
-      echo "⚠️  Using default theme path: $THEME_PATH"
+    # Check if running in CI environment
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      THEME_PATH="themes/custom/testtheme"
+      echo "CI environment detected, using test theme path: $THEME_PATH"
+    else
+      read THEME_PATH
+      if [ -z "$THEME_PATH" ]; then
+        THEME_PATH="themes/custom/themename"
+        echo "⚠️  Using default theme path: $THEME_PATH"
+      fi
     fi
     echo "THEME = '${THEME_PATH}'"
     ddev config --web-environment-add THEME=${THEME_PATH}
@@ -75,10 +81,16 @@ pre_install_actions:
   #ddev-nodisplay
   #ddev-description:Set THEMENAME
   if !( {{ contains "THEMENAME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    read THEME_NAME
-    if [ -z "$THEME_NAME" ]; then
-      THEME_NAME="themename"
-      echo "⚠️  Using default theme name: $THEME_NAME"
+    # Check if running in CI environment
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      THEME_NAME="testtheme"
+      echo "CI environment detected, using test theme name: $THEME_NAME"
+    else
+      read THEME_NAME
+      if [ -z "$THEME_NAME" ]; then
+        THEME_NAME="themename"
+        echo "⚠️  Using default theme name: $THEME_NAME"
+      fi
     fi
     echo "THEMENAME = '${THEME_NAME}'"
     ddev config --web-environment-add THEMENAME=${THEME_NAME}
