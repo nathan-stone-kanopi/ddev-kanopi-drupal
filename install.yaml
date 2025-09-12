@@ -13,9 +13,9 @@ ddev_version_constraint: ">= v1.22.0"
 pre_install_actions:
 # Introduction
 - |
-  #ddev-description:Configuring Kanopi Pantheon Drupal Add-on
+  #ddev-description:Configuring Kanopi Drupal Add-on
   echo ""
-  echo "🔧 Configuring Kanopi Pantheon Drupal Add-on..."
+  echo "🔧 Configuring Kanopi Drupal Add-on..."
   echo ""
 
 # Get TERMINUS_MACHINE_TOKEN from user if we don't have it yet
