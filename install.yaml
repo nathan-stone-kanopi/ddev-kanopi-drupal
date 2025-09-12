@@ -58,9 +58,10 @@ pre_install_actions:
       ddev config --docroot=web
       echo "✅ Configured docroot for Pantheon (web)"
     elif [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
-      # Acquia uses 'docroot' as docroot
-      ddev config --docroot=docroot
+      # Acquia uses 'docroot' as docroot and apache-fpm webserver
+      ddev config --docroot=docroot --webserver-type=apache-fpm
       echo "✅ Configured docroot for Acquia (docroot)"
+      echo "✅ Configured webserver for Acquia (apache-fpm)"
     fi
   fi
 
@@ -357,14 +358,26 @@ post_install_actions:
 
 
 - |
-  #ddev-description: Install Redis add-on for all configurations
-  # Install Redis add-on for all configurations
+  #ddev-description: Install caching add-on based on hosting provider
+  # Install provider-specific caching add-on
   echo ""
-  echo "📦 Installing Redis add-on..."
-  ddev add-on get ddev/ddev-redis  
-  echo ""
-  echo "Ignore DDEV Redis settings file"
-  echo "settings.ddev.redis.php" >> ../.gitignore
+  
+  # Get hosting provider from config
+  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  
+  if [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
+    echo "📦 Installing Memcached add-on for Acquia..."
+    ddev add-on get ddev/ddev-memcached
+    echo ""
+    echo "Ignore DDEV Memcached settings file"
+    echo "settings.ddev.memcached.php" >> ../.gitignore
+  else
+    echo "📦 Installing Redis add-on for Pantheon..."
+    ddev add-on get ddev/ddev-redis  
+    echo ""
+    echo "Ignore DDEV Redis settings file"
+    echo "settings.ddev.redis.php" >> ../.gitignore
+  fi
 - |
   #ddev-description: Install Solr add-on for search functionality
   # Install Solr add-on for search functionality
@@ -383,17 +396,25 @@ post_install_actions:
 # Explain the installed components
 - |
   echo ""
-  echo "✅ Kanopi Pantheon Drupal Add-on installed successfully!"
+  echo "✅ Kanopi Drupal Add-on installed successfully!"
   echo ""
   echo "📦 Installed components:"
-  echo "   • Enhanced Pantheon provider with smart backup management"
+  echo "   • Enhanced multi-provider support (Pantheon/Acquia) with smart backup management"
   echo "   • 17 custom commands for Drupal development workflow"
   echo "   • Nginx proxy configuration so you dont have to download assets locally"
   echo "   • Theme development tools with Node.js/NPM support"
   echo "   • Cypress testing integration"
   echo "   • Drupal Recipe support"
   echo "   • Migration and backup utilities"
-  echo "   • Redis add-on installed"
+  
+  # Get hosting provider to show correct caching add-on
+  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  if [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
+    echo "   • Memcached add-on installed (Acquia-compatible)"
+  else
+    echo "   • Redis add-on installed (Pantheon-compatible)"
+  fi
+  
   echo "   • Solr add-on with DDEV configuration for search functionality"
   echo "   • Setup xdebug performance profiling.  Can be switched back to normal debugging as well."
   echo ""
@@ -431,15 +452,21 @@ removal_action:
 # Remove all installed components and add-ons
 - |
   echo ""
-  echo "🗑️ Removing Kanopi Pantheon Drupal Add-on..."
+  echo "🗑️ Removing Kanopi Drupal Add-on..."
   echo ""
   
-  # Remove Redis add-on
-  echo "📦 Removing Redis add-on..."
+  # Remove caching add-ons (both Redis and Memcached)
+  echo "📦 Removing caching add-ons..."
   if ddev add-on remove ddev-redis 2>/dev/null; then
     echo "✅ Redis add-on removed successfully"
   else
     echo "⚠️ Redis add-on removal failed or not found"
+  fi
+  
+  if ddev add-on remove ddev-memcached 2>/dev/null; then
+    echo "✅ Memcached add-on removed successfully"
+  else
+    echo "⚠️ Memcached add-on removal failed or not found"
   fi
   
   # Remove Solr add-on
@@ -494,8 +521,8 @@ removal_action:
   rmdir commands 2>/dev/null || true
   
   echo ""
-  echo "✅ Kanopi Pantheon Drupal Add-on removed successfully!"
-  echo "   • Redis and Solr add-ons uninstalled"
+  echo "✅ Kanopi Drupal Add-on removed successfully!"
+  echo "   • Caching add-ons (Redis/Memcached) and Solr add-ons uninstalled"
   echo "   • All 17 custom commands removed"
   echo "   • Nginx proxy configuration removed"
   echo "   • Environment variables preserved (remove manually if needed)"
