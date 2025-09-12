@@ -54,10 +54,11 @@ health_checks() {
     
     # Pre-configure environment to avoid interactive prompts
     ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token
+    ddev config --web-environment-add=HOSTING_PROVIDER=pantheon
     ddev config --web-environment-add=THEME=themes/custom/testtheme
     ddev config --web-environment-add=THEMENAME=testtheme
-    ddev config --web-environment-add=PANTHEON_SITE=test-site-123
-    ddev config --web-environment-add=PANTHEON_ENV=dev
+    ddev config --web-environment-add=HOSTING_SITE=test-site-123
+    ddev config --web-environment-add=HOSTING_ENV=dev
     ddev config --web-environment-add=MIGRATE_DB_SOURCE=""
     ddev config --web-environment-add=MIGRATE_DB_ENV=""
     
@@ -80,10 +81,11 @@ health_checks() {
     
     # Pre-configure environment to avoid interactive prompts
     ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token
+    ddev config --web-environment-add=HOSTING_PROVIDER=pantheon
     ddev config --web-environment-add=THEME=themes/custom/testtheme
     ddev config --web-environment-add=THEMENAME=testtheme
-    ddev config --web-environment-add=PANTHEON_SITE=test-site
-    ddev config --web-environment-add=PANTHEON_ENV=dev
+    ddev config --web-environment-add=HOSTING_SITE=test-site
+    ddev config --web-environment-add=HOSTING_ENV=dev
     ddev config --web-environment-add=MIGRATE_DB_SOURCE=""
     ddev config --web-environment-add=MIGRATE_DB_ENV=""
     

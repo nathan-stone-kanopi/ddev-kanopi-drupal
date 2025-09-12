@@ -18,22 +18,92 @@ pre_install_actions:
   echo "🔧 Configuring Kanopi Drupal Add-on..."
   echo ""
 
-# Get TERMINUS_MACHINE_TOKEN from user if we don't have it yet
+# Platform selection - check if exists
 - |
   #ddev-nodisplay
-  if ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing TERMINUS_MACHINE_TOKEN."
+  if ({{ contains "HOSTING_PROVIDER=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    echo "Using existing HOSTING_PROVIDER from project config.yaml."
   else
-    printf "\n\nPlease enter your Pantheon Terminus machine token: "
+    printf "🌐 Select your hosting platform (pantheon/acquia): "
   fi
 
+# Platform selection - set value
 - |
   #ddev-nodisplay
-  if !( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    read token
-    # Put the token into the global web environment
-    ddev config global --web-environment-add TERMINUS_MACHINE_TOKEN=${token}
-    echo "TERMINUS_MACHINE_TOKEN set globally"
+  #ddev-description:Set HOSTING_PROVIDER
+  if !( {{ contains "HOSTING_PROVIDER=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    # Check if running in CI environment
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      HOSTING_PROVIDER="pantheon"
+      echo "CI environment detected, using test platform: $HOSTING_PROVIDER"
+    else
+      read HOSTING_PROVIDER
+      if [ -z "$HOSTING_PROVIDER" ]; then
+        HOSTING_PROVIDER="pantheon"
+        echo "⚠️  Using default platform: $HOSTING_PROVIDER"
+      fi
+      # Validate platform choice
+      if [[ "$HOSTING_PROVIDER" != "pantheon" && "$HOSTING_PROVIDER" != "acquia" ]]; then
+        echo "❌ Invalid platform. Please choose 'pantheon' or 'acquia'"
+        exit 1
+      fi
+    fi
+    echo "HOSTING_PROVIDER = '${HOSTING_PROVIDER}'"
+    ddev config --web-environment-add HOSTING_PROVIDER=${HOSTING_PROVIDER}
+    echo "HOSTING_PROVIDER set to ${HOSTING_PROVIDER}"
+    
+    # Platform-specific configuration
+    if [[ "$HOSTING_PROVIDER" == "pantheon" ]]; then
+      # Pantheon uses 'web' as docroot
+      ddev config --docroot=web
+      echo "✅ Configured docroot for Pantheon (web)"
+    elif [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
+      # Acquia uses 'docroot' as docroot
+      ddev config --docroot=docroot
+      echo "✅ Configured docroot for Acquia (docroot)"
+    fi
+  fi
+
+# Platform-specific credentials configuration
+- |
+  #ddev-nodisplay
+  #ddev-description:Configure platform credentials
+  # Get current hosting provider
+  CURRENT_PROVIDER=""
+  if ( {{ contains "HOSTING_PROVIDER=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    CURRENT_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER 2>/dev/null || echo "pantheon")
+  fi
+  
+  if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
+    # Pantheon - check for TERMINUS_MACHINE_TOKEN
+    if ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
+      echo "Using existing TERMINUS_MACHINE_TOKEN."
+    else
+      printf "\n\n🏛️  Please enter your Pantheon Terminus machine token: "
+      read token
+      # Put the token into the global web environment
+      ddev config global --web-environment-add TERMINUS_MACHINE_TOKEN=${token}
+      echo "TERMINUS_MACHINE_TOKEN set globally"
+    fi
+  elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
+    # Acquia - check for API credentials
+    if ( {{ contains "ACQUIA_API_KEY" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_KEY" (list .DdevProjectConfig.web_environment | toString) }} ); then
+      echo "Using existing ACQUIA_API_KEY."
+    else
+      printf "\n\n🔷 Please enter your Acquia API Key: "
+      read api_key
+      ddev config global --web-environment-add ACQUIA_API_KEY=${api_key}
+      echo "ACQUIA_API_KEY set globally"
+    fi
+    
+    if ( {{ contains "ACQUIA_API_SECRET" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_SECRET" (list .DdevProjectConfig.web_environment | toString) }} ); then
+      echo "Using existing ACQUIA_API_SECRET."
+    else
+      printf "🔐 Please enter your Acquia API Secret: "
+      read api_secret
+      ddev config global --web-environment-add ACQUIA_API_SECRET=${api_secret}
+      echo "ACQUIA_API_SECRET set globally"
+    fi
   fi
 
 
@@ -97,64 +167,76 @@ pre_install_actions:
     echo "THEMENAME set to ${THEME_NAME}"
   fi
 
-# PANTHEON_SITE configuration - check if exists
+# HOSTING_SITE configuration - check if exists
 - |
   #ddev-nodisplay
-  if ({{ contains "PANTHEON_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing PANTHEON_SITE from project config.yaml."
+  if ({{ contains "HOSTING_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    echo "Using existing HOSTING_SITE from project config.yaml."
   else
-    printf "🏛️  Enter your Pantheon project machine name (like 'my-site'): "
+    # Get current hosting provider
+    CURRENT_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER 2>/dev/null || echo "pantheon")
+    if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
+      printf "🏛️  Enter your Pantheon project machine name (like 'my-site'): "
+    elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
+      printf "🔷 Enter your Acquia application name (like 'my-app'): "
+    fi
   fi
 
-# PANTHEON_SITE configuration - set value
+# HOSTING_SITE configuration - set value
 - |
   #ddev-nodisplay
-  #ddev-description:Set PANTHEON_SITE
-  if !( {{ contains "PANTHEON_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+  #ddev-description:Set HOSTING_SITE
+  if !( {{ contains "HOSTING_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
     # Check if running in CI environment
     if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      PANTHEON_SITE="test-site-123"
-      echo "CI environment detected, using test site: $PANTHEON_SITE"
+      HOSTING_SITE="test-site-123"
+      echo "CI environment detected, using test site: $HOSTING_SITE"
     else
-      read PANTHEON_SITE
-      if [ -z "$PANTHEON_SITE" ]; then
-        echo "❌ PANTHEON_SITE is required for proper functionality"
+      read HOSTING_SITE
+      if [ -z "$HOSTING_SITE" ]; then
+        echo "❌ HOSTING_SITE is required for proper functionality"
         exit 1
       fi
     fi
-    echo "PANTHEON_SITE = '${PANTHEON_SITE}'"
-    ddev config --web-environment-add PANTHEON_SITE=${PANTHEON_SITE}
-    echo "PANTHEON_SITE set to ${PANTHEON_SITE}"
+    echo "HOSTING_SITE = '${HOSTING_SITE}'"
+    ddev config --web-environment-add HOSTING_SITE=${HOSTING_SITE}
+    echo "HOSTING_SITE set to ${HOSTING_SITE}"
   fi
 
-# PANTHEON_ENV configuration - check if exists
+# HOSTING_ENV configuration - check if exists
 - |
   #ddev-nodisplay
-  if ({{ contains "PANTHEON_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing PANTHEON_ENV from project config.yaml."
+  if ({{ contains "HOSTING_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    echo "Using existing HOSTING_ENV from project config.yaml."
   else
-    printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
+    # Get current hosting provider
+    CURRENT_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER 2>/dev/null || echo "pantheon")
+    if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
+      printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
+    elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
+      printf "🌍 Enter default Acquia environment for database pulls (dev/test/prod) [dev]: "
+    fi
   fi
 
-# PANTHEON_ENV configuration - set value
+# HOSTING_ENV configuration - set value
 - |
   #ddev-nodisplay
-  #ddev-description:Set PANTHEON_ENV
-  if !( {{ contains "PANTHEON_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+  #ddev-description:Set HOSTING_ENV
+  if !( {{ contains "HOSTING_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
     # Check if running in CI environment
     if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      PANTHEON_ENV="dev"
-      echo "CI environment detected, using default environment: $PANTHEON_ENV"
+      HOSTING_ENV="dev"
+      echo "CI environment detected, using default environment: $HOSTING_ENV"
     else
-      read PANTHEON_ENV
-      if [ -z "$PANTHEON_ENV" ]; then
-        PANTHEON_ENV="dev"
-        echo "⚠️  Using default environment: $PANTHEON_ENV"
+      read HOSTING_ENV
+      if [ -z "$HOSTING_ENV" ]; then
+        HOSTING_ENV="dev"
+        echo "⚠️  Using default environment: $HOSTING_ENV"
       fi
     fi
-    echo "PANTHEON_ENV = '${PANTHEON_ENV}'"
-    ddev config --web-environment-add PANTHEON_ENV=${PANTHEON_ENV}
-    echo "PANTHEON_ENV set to ${PANTHEON_ENV}"
+    echo "HOSTING_ENV = '${HOSTING_ENV}'"
+    ddev config --web-environment-add HOSTING_ENV=${HOSTING_ENV}
+    echo "HOSTING_ENV set to ${HOSTING_ENV}"
   fi
 
 # Optional Migration Configuration intro
@@ -245,21 +327,32 @@ post_install_actions:
 
 - |
   #ddev-nodisplay
-  #ddev-description: Update Nginx proxy configuration with Pantheon site values
+  #ddev-description: Update Nginx proxy configuration with hosting platform values
   echo "🔧 Updating Nginx proxy configuration..."
   
   # Get the environment variables from the config file
-  PANTHEON_SITE_VALUE=$(grep "PANTHEON_SITE=" ./config.yaml | sed 's/.*PANTHEON_SITE=\([^,]*\).*/\1/' | tr -d '"' || echo "")
-  PANTHEON_ENV_VALUE=$(grep "PANTHEON_ENV=" ./config.yaml | sed 's/.*PANTHEON_ENV=\([^,]*\).*/\1/' | tr -d '"' || echo "")
+  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  HOSTING_SITE_VALUE=$(grep "HOSTING_SITE=" ./config.yaml | sed 's/.*HOSTING_SITE=\([^,]*\).*/\1/' | tr -d '"' || echo "")
+  HOSTING_ENV_VALUE=$(grep "HOSTING_ENV=" ./config.yaml | sed 's/.*HOSTING_ENV=\([^,]*\).*/\1/' | tr -d '"' || echo "")
   
-  if [ -n "$PANTHEON_SITE_VALUE" ] && [ -n "$PANTHEON_ENV_VALUE" ]; then
-    # Update the nginx configuration file with actual values
-    sed -i.bak "s/PANTHEON_ENV-PANTHEON_SITE/$PANTHEON_ENV_VALUE-$PANTHEON_SITE_VALUE/g" ./nginx_full/nginx-site.conf
-    echo "✅ Updated nginx proxy to redirect to: $PANTHEON_ENV_VALUE-$PANTHEON_SITE_VALUE.pantheonsite.io"
+  if [ -n "$HOSTING_SITE_VALUE" ] && [ -n "$HOSTING_ENV_VALUE" ]; then
+    # Platform-specific proxy configuration
+    if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
+      # Replace the placeholder in nginx config with Pantheon values
+      sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE/g" ./nginx_full/nginx-site.conf
+      sed -i.bak "s/HOSTING_DOMAIN/pantheonsite.io/g" ./nginx_full/nginx-site.conf
+      echo "✅ Updated nginx proxy to redirect to: $HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE.pantheonsite.io"
+    elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
+      # Replace the placeholder in nginx config with Acquia values
+      sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_SITE_VALUE$HOSTING_ENV_VALUE/g" ./nginx_full/nginx-site.conf
+      sed -i.bak "s/HOSTING_DOMAIN/prod.acquia-sites.com/g" ./nginx_full/nginx-site.conf
+      echo "✅ Updated nginx proxy to redirect to: $HOSTING_SITE_VALUE$HOSTING_ENV_VALUE.prod.acquia-sites.com"
+    fi
   else
-    echo "⚠️  Could not retrieve PANTHEON_SITE and PANTHEON_ENV values from config for nginx configuration"
-    echo "    PANTHEON_SITE_VALUE: '$PANTHEON_SITE_VALUE'"
-    echo "    PANTHEON_ENV_VALUE: '$PANTHEON_ENV_VALUE'"
+    echo "⚠️  Could not retrieve HOSTING_SITE and HOSTING_ENV values from config for nginx configuration"
+    echo "    HOSTING_PROVIDER_VALUE: '$HOSTING_PROVIDER_VALUE'"
+    echo "    HOSTING_SITE_VALUE: '$HOSTING_SITE_VALUE'"
+    echo "    HOSTING_ENV_VALUE: '$HOSTING_ENV_VALUE'"
   fi  
 
 
