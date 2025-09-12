@@ -16,7 +16,11 @@ FORCE_BACKUP=false
 # Get hosting environment from environment variable, default to 'dev' if not set
 ENVIRONMENT="$HOSTING_ENV"
 if [ -z "$ENVIRONMENT" ]; then
-  ENVIRONMENT="dev"
+  if [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
+    ENVIRONMENT="prod"
+  else
+    ENVIRONMENT="dev"
+  fi
 fi
 
 for arg in "$@"; do

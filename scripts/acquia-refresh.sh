@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-## Acquia database refresh script
-## Called from the main refresh command when HOSTING_PROVIDER=acquia
+## Acquia Database Refresh Script
+## Called by the main refresh command for Acquia platforms
 
 green='\033[0;32m'
 yellow='\033[1;33m'
@@ -9,159 +9,374 @@ red='\033[0;31m'
 NC='\033[0m'
 divider='===================================================\n'
 
-# Function to authenticate with Acquia CLI
-authenticate_acquia() {
-    echo -e "\n${yellow} Authenticating with Acquia CLI... ${NC}"
-    
-    # Get API credentials from environment
-    ACQUIA_API_KEY=$(printenv ACQUIA_API_KEY 2>/dev/null)
-    ACQUIA_API_SECRET=$(printenv ACQUIA_API_SECRET 2>/dev/null)
-    
-    if [ -z "${ACQUIA_API_KEY:-}" ] || [ -z "${ACQUIA_API_SECRET:-}" ]; then
-        echo -e "${red}ACQUIA_API_KEY and ACQUIA_API_SECRET environment variables are not set in the web container. Please configure them in your global ddev config.${NC}"
-        exit 1
+# Parameters from main refresh command
+ENVIRONMENT=${1:-prod}
+FORCE_REFRESH=${2:-false}
+
+echo -e "${green}${divider}${NC}"
+echo -e "${green}Refreshing database from Acquia ${ENVIRONMENT} environment${NC}"
+if [[ "$FORCE_REFRESH" == "true" ]]; then
+  echo -e "${yellow}Force refresh enabled - will create new backup${NC}"
+fi
+echo -e "${green}${divider}${NC}"
+
+# Check environment variables and authenticate with Acquia CLI
+echo -e "${yellow}Checking Acquia CLI authentication...${NC}"
+
+# Get environment variables from DDEV container
+ACQUIA_API_KEY=$(printenv ACQUIA_API_KEY 2>/dev/null)
+ACQUIA_API_SECRET=$(printenv ACQUIA_API_SECRET 2>/dev/null)
+
+# Check for required environment variables
+if [ -z "${ACQUIA_API_KEY:-}" ] || [ -z "${ACQUIA_API_SECRET:-}" ]; then
+  echo -e "${red}Error: ACQUIA_API_KEY and ACQUIA_API_SECRET must be set${NC}"
+  echo -e "${red}Please set these in ~/.ddev/global_config.yaml or your environment${NC}"
+  echo -e "${red}Example in ~/.ddev/global_config.yaml:${NC}"
+  echo -e "${red}web_environment:${NC}"
+  echo -e "${red}  - ACQUIA_API_KEY=your_api_key${NC}"
+  echo -e "${red}  - ACQUIA_API_SECRET=your_api_secret${NC}"
+  exit 1
+fi
+
+# Authenticate with environment variables
+echo -e "${yellow}Authenticating with Acquia CLI using environment variables...${NC}"
+if acli -n auth:login -n --key="${ACQUIA_API_KEY}" --secret="${ACQUIA_API_SECRET}"; then
+  echo -e "${green}Successfully authenticated with Acquia CLI!${NC}"
+else
+  echo -e "${red}Error: Failed to authenticate with Acquia CLI.${NC}"
+  echo -e "${red}Please verify your ACQUIA_API_KEY and ACQUIA_API_SECRET are correct.${NC}"
+  echo -e "${red}You can get these from https://cloud.acquia.com/a/profile/tokens${NC}"
+  exit 1
+fi
+
+# Get application UUID from environment variable
+APP_UUID=$(printenv HOSTING_SITE 2>/dev/null)
+if [[ -z "$APP_UUID" ]]; then
+  echo -e "${red}Error: HOSTING_SITE environment variable not set. Check .ddev/config.yaml web_environment section.${NC}"
+  exit 1
+fi
+
+echo -e "${green}Using Acquia application: ${APP_UUID}${NC}"
+echo -e "${green}Environment: ${ENVIRONMENT}${NC}"
+
+# Get all databases from the environment first for backup age checking
+echo -e "${yellow}Getting list of databases from Acquia ${ENVIRONMENT} environment...${NC}"
+# Try the database list command with error handling
+DATABASES=""
+for attempt in 1 2 3; do
+  echo -e "${yellow}Attempt ${attempt}: Fetching database list...${NC}"
+  set -x # Adding verbosity here seems to stop it hanging when call from ddev init
+  DATABASES=$(acli api:environments:database-list "${APP_UUID}.${ENVIRONMENT}" | jq -r ".[].name" 2>/dev/null)
+  set +x
+  if [[ -n "$DATABASES" ]]; then
+    break
+  fi
+  echo -e "${yellow}Attempt ${attempt} failed, retrying in 5 seconds...${NC}"
+  sleep 5
+done
+
+if [[ -z "$DATABASES" ]]; then
+  echo -e "${red}Error: No databases found for ${ENVIRONMENT} environment${NC}"
+  exit 1
+fi
+
+# Convert to array
+DB_ARRAY=($DATABASES)
+PRIMARY_DB=${DB_ARRAY[0]}
+
+echo -e "${green}Found databases: ${DATABASES}${NC}"
+echo -e "${green}Primary database: ${PRIMARY_DB}${NC}"
+
+# Check for existing backup age using primary database
+BACKUP_AGE=""
+if [[ "$FORCE_REFRESH" == "false" ]]; then
+  echo -e "${yellow}Checking for recent database backups for ${PRIMARY_DB}...${NC}"
+
+  # Get the most recent backup for the primary database
+  RECENT_BACKUP=$(acli api:environments:database-backup-list "${APP_UUID}.${ENVIRONMENT}" "${PRIMARY_DB}" | jq -r ".[0].completed_at // empty" 2>/dev/null)
+
+  if [[ -n "$RECENT_BACKUP" ]]; then
+    # Calculate backup age in hours (strip timezone info)
+    BACKUP_CLEAN=$(echo "$RECENT_BACKUP" | sed 's/+.*$//')
+    BACKUP_TIMESTAMP=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${BACKUP_CLEAN}" +%s 2>/dev/null)
+    CURRENT_TIMESTAMP=$(date +%s)
+    BACKUP_AGE_SECONDS=$((CURRENT_TIMESTAMP - BACKUP_TIMESTAMP))
+    BACKUP_AGE_HOURS=$((BACKUP_AGE_SECONDS / 3600))
+
+    echo -e "${yellow}Most recent backup for ${PRIMARY_DB} is ${BACKUP_AGE_HOURS} hours old${NC}"
+
+    if [[ $BACKUP_AGE_HOURS -lt 12 ]]; then
+      echo -e "${green}Recent backup found (less than 12 hours old), using existing backup${NC}"
+    else
+      echo -e "${yellow}Backup is older than 12 hours, creating new backup${NC}"
+      FORCE_REFRESH=true
+    fi
+  else
+    echo -e "${yellow}No recent backup found for ${PRIMARY_DB}, creating new backup${NC}"
+    FORCE_REFRESH=true
+  fi
+fi
+
+# Function to create backup if needed for a specific database
+create_backup_if_needed() {
+  local DB_NAME=$1
+
+  if [[ "$FORCE_REFRESH" == "true" ]]; then
+    echo -e "${yellow}Creating new database backup for ${DB_NAME}...${NC}"
+
+    # Create the backup and get notification ID
+    NOTIFICATION_RESPONSE=$(acli api:environments:database-backup-create "${APP_UUID}.${ENVIRONMENT}" "${DB_NAME}" 2>/dev/null)
+    NOTIFICATION_ID=$(echo "$NOTIFICATION_RESPONSE" | jq -r '._links.notification.href // empty' 2>/dev/null | sed 's#https://cloud.acquia.com/api/notifications/##')
+
+    if [[ -z "$NOTIFICATION_ID" ]]; then
+      echo -e "${red}Error: Failed to create backup for ${DB_NAME}${NC}"
+      return 1
     fi
 
-    # Authenticate with acli using API credentials
-    if ! acli auth:login --key="${ACQUIA_API_KEY}" --secret="${ACQUIA_API_SECRET}"; then
-        echo -e "${red}Failed to authenticate with Acquia CLI. Please check your API credentials.${NC}"
-        exit 1
+    echo -e "${yellow}Waiting for backup to complete for ${DB_NAME} (notification: ${NOTIFICATION_ID})...${NC}"
+
+    # Poll for completion (with timeout)
+    TIMEOUT=1800  # 30 minutes
+    ELAPSED=0
+    while [[ $ELAPSED -lt $TIMEOUT ]]; do
+      STATUS=$(acli api:notifications:find "${NOTIFICATION_ID}" | jq -r ".status // empty" 2>/dev/null)
+
+      if [[ "$STATUS" == "completed" ]]; then
+        echo -e "${green}Backup completed successfully for ${DB_NAME}!${NC}"
+        # Give the API a moment to update the backup list
+        sleep 10
+        return 0
+      elif [[ "$STATUS" == "failed" ]]; then
+        echo -e "${red}Backup failed for ${DB_NAME}${NC}"
+        return 1
+      fi
+
+      echo -e "${yellow}Backup still in progress for ${DB_NAME}... (${ELAPSED}s elapsed, status: ${STATUS})${NC}"
+      sleep 30
+      ELAPSED=$((ELAPSED + 30))
+    done
+
+    if [[ $ELAPSED -ge $TIMEOUT ]]; then
+      echo -e "${red}Backup timed out after 30 minutes for ${DB_NAME}${NC}"
+      return 1
     fi
-    echo -e "${green}Successfully authenticated with Acquia CLI.${NC}"
+  fi
+
+  return 0
 }
 
-# Function to refresh database from Acquia
-refresh_acquia_database() {
-    local ENVIRONMENT="$1"
-    local FORCE_BACKUP="$2"
-    
-    echo -e "\n${yellow} Get database from Acquia environment: ${ENVIRONMENT}. ${NC}"
-    echo -e "${green}${divider}${NC}"
-    
-    # Extract application name from HOSTING_SITE environment variable or fall back to DDEV project name.
-    APP_NAME="${HOSTING_SITE:-$DDEV_PROJECT}"
-    
-    # Acquia environment format
-    APP_ENV="${APP_NAME}.${ENVIRONMENT}"
-    
-    # Define the local database dump file path
-    DB_DUMP="/tmp/acquia_backup.${APP_ENV}.sql.gz"
+# Function to download and import a database
+import_database() {
+  local DB_NAME=$1
+  local TARGET_DB=$2
 
-    echo -e "\nChecking for local database dump file..."
+  echo -e "${yellow}Processing database: ${DB_NAME} -> ${TARGET_DB}${NC}"
 
-    # Calculate current time and 12-hour threshold.
-    CURRENT_TIME=$(date +%s)
-    TWELVE_HOURS_AGO=$((CURRENT_TIME - 43200))  # 12 hours = 43200 seconds
+  # Create backup if needed
+  if ! create_backup_if_needed "$DB_NAME"; then
+    echo -e "${red}Failed to create backup for ${DB_NAME}${NC}"
+    return 1
+  fi
 
-    DOWNLOAD_NEW_BACKUP=false
+  # Get the most recent backup for this database
+  BACKUP_ID=$(acli api:environments:database-backup-list "${APP_UUID}.${ENVIRONMENT}" "${DB_NAME}" | jq -r ".[0].id // empty" 2>/dev/null)
 
-    # Check if force flag is set
-    if [ "$FORCE_BACKUP" = true ]; then
-        echo -e "${yellow}Force flag detected. Will download fresh backup regardless of local file age.${NC}"
-        DOWNLOAD_NEW_BACKUP=true
+  if [[ -z "$BACKUP_ID" ]]; then
+    echo -e "${red}Error: No database backups found for ${DB_NAME} in ${ENVIRONMENT} environment${NC}"
+    return 1
+  fi
+
+  echo -e "${green}Using backup ID: ${BACKUP_ID} for database: ${DB_NAME}${NC}"
+
+  # Download the database backup
+  BACKUP_FILE="/tmp/acquia_backup_${ENVIRONMENT}_${DB_NAME}_$(date +%Y%m%d_%H%M%S).sql.gz"
+
+  echo -e "${yellow}Getting download URL for ${DB_NAME}...${NC}"
+  DOWNLOAD_URL=$(acli api:environments:database-backup-download "${APP_UUID}.${ENVIRONMENT}" "${DB_NAME}" "${BACKUP_ID}" | jq -r ".url // empty" 2>/dev/null)
+
+  if [[ -z "$DOWNLOAD_URL" ]]; then
+    echo -e "${red}Error: Failed to get download URL for ${DB_NAME}${NC}"
+    return 1
+  fi
+
+  echo -e "${yellow}Downloading database backup for ${DB_NAME}...${NC}"
+  curl -fsSL -o "${BACKUP_FILE}" "${DOWNLOAD_URL}"
+
+  if [[ ! -f "$BACKUP_FILE" ]] || [[ ! -s "$BACKUP_FILE" ]]; then
+    echo -e "${red}Error: Failed to download database backup for ${DB_NAME}${NC}"
+    return 1
+  fi
+
+  echo -e "${green}Database backup downloaded to: ${BACKUP_FILE}${NC}"
+
+  # Import the database
+  if [[ "$TARGET_DB" == "db" ]]; then
+    # Primary database goes to default 'db' database
+    echo -e "${yellow}Importing primary database ${DB_NAME} into DDEV default database...${NC}"
+
+    # First, drop the existing database to ensure clean import
+    mysql -e "DROP DATABASE IF EXISTS db; CREATE DATABASE db;"
+
+    # Import the database backup
+    if [[ "$BACKUP_FILE" == *.gz ]]; then
+      gunzip -c "${BACKUP_FILE}" | mysql db
     else
-        # Check if local dump file exists and its age
-        if [ -f "$DB_DUMP" ]; then
-            # Get file modification time
-            LOCAL_FILE_TIME=""
-
-            # Try different methods to get the file modification time
-            if [ -z "$LOCAL_FILE_TIME" ]; then
-                # Method 1: Try stat with format specifier (GNU/Linux style)
-                LOCAL_FILE_TIME=$(stat -c %Y "$DB_DUMP" 2>/dev/null)
-            fi
-
-            if [ -z "$LOCAL_FILE_TIME" ]; then
-                # Method 2: Try stat with format specifier (BSD/macOS style)
-                LOCAL_FILE_TIME=$(stat -f %m "$DB_DUMP" 2>/dev/null)
-            fi
-
-            if [ -z "$LOCAL_FILE_TIME" ]; then
-                # Method 3: Use date command with file reference
-                LOCAL_FILE_TIME=$(date -r "$DB_DUMP" +%s 2>/dev/null)
-            fi
-
-            # Ensure we got a valid timestamp (numeric value)
-            if [ -n "$LOCAL_FILE_TIME" ] && echo "$LOCAL_FILE_TIME" | grep -q '^[0-9][0-9]*$'; then
-                if [ "$LOCAL_FILE_TIME" -lt "$TWELVE_HOURS_AGO" ]; then
-                    LOCAL_AGE_HOURS=$(( (CURRENT_TIME - LOCAL_FILE_TIME) / 3600 ))
-                    echo -e "${yellow}Local dump file is ${LOCAL_AGE_HOURS} hours old (older than 12 hours).${NC}"
-                    DOWNLOAD_NEW_BACKUP=true
-                else
-                    LOCAL_AGE_HOURS=$(( (CURRENT_TIME - LOCAL_FILE_TIME) / 3600 ))
-                    echo -e "${green}Recent local dump file found (${LOCAL_AGE_HOURS} hours old). Using existing file.${NC}"
-                fi
-            else
-                echo -e "${yellow}Could not determine local file age (got: '$LOCAL_FILE_TIME'). Will download fresh backup.${NC}"
-                DOWNLOAD_NEW_BACKUP=true
-            fi
-        else
-            echo -e "${yellow}No local dump file found.${NC}"
-            DOWNLOAD_NEW_BACKUP=true
-        fi
+      mysql db < "${BACKUP_FILE}"
     fi
+  else
+    # Secondary databases get their own named database
+    echo -e "${yellow}Creating and importing secondary database: ${TARGET_DB}${NC}"
 
-    CREATE_NEW_BACKUP=false
+    # Create the database
+    mysql -e "DROP DATABASE IF EXISTS \`${TARGET_DB}\`; CREATE DATABASE \`${TARGET_DB}\`;"
 
-    if [ "$DOWNLOAD_NEW_BACKUP" = true ]; then
-        echo -e "\nChecking for database backup on ${APP_ENV}..."
-
-        # Check if there's a database backup and get its timestamp using acli
-        # Note: This is a simplified version - actual acli commands may differ
-        LATEST_BACKUP_INFO=$(acli api:environments:database-backup-list ${APP_ENV} 2>/dev/null | head -1)
-
-        # Check if force flag is set or no backup exists
-        if [ "$FORCE_BACKUP" = true ]; then
-            echo -e "${yellow}Force flag detected. Creating new backup regardless of age.${NC}"
-            CREATE_NEW_BACKUP=true
-        elif [ -z "$LATEST_BACKUP_INFO" ]; then
-            echo -e "${yellow}No database backup found or could not retrieve backup info.${NC}"
-            CREATE_NEW_BACKUP=true
-        else
-            echo -e "${green}Using existing backup (age check simplified for Acquia).${NC}"
-            # Note: Acquia backup age checking would need more specific acli command parsing
-            # This is simplified - you may need to adjust based on actual acli output format
-        fi
-    fi
-
-    if [ "$CREATE_NEW_BACKUP" = true ]; then
-        echo -e "${yellow}Creating new backup for ${APP_ENV}...${NC}"
-        if acli api:environments:database-backup-create ${APP_ENV}; then
-            echo -e "${green}Backup created successfully.${NC}"
-            # Wait a moment for the backup to be processed
-            echo "Waiting for backup to complete..."
-            sleep 20  # Acquia may need more time
-        else
-            echo -e "${red}Failed to create backup for ${APP_ENV}. Exiting.${NC}"
-            exit 1
-        fi
-    fi
-
-    # Download the database backup using acli
-    if [ "$DOWNLOAD_NEW_BACKUP" = true ]; then
-        echo -e "\nDownloading database backup from ${APP_ENV}..."
-        # Note: Actual acli command may differ - this is a simplified version
-        if acli api:environments:database-backup-download ${APP_ENV} --file=${DB_DUMP}; then
-            echo -e "${green}Database backup downloaded successfully.${NC}"
-        else
-            echo -e "${red}Failed to download database backup. Exiting.${NC}"
-            exit 1
-        fi
+    # Import the database backup to the named database
+    if [[ "$BACKUP_FILE" == *.gz ]]; then
+      gunzip -c "${BACKUP_FILE}" | mysql "${TARGET_DB}"
     else
-        echo -e "\nUsing existing local database dump file."
+      mysql "${TARGET_DB}" < "${BACKUP_FILE}"
     fi
+  fi
 
-    echo -e "\nReset DB"
-    drush sql-drop -y
+  # Clean up the downloaded file
+  echo -e "${yellow}Cleaning up temporary backup file: ${BACKUP_FILE}${NC}"
+  rm -f "${BACKUP_FILE}"
 
-    echo -e "\nImport DB"
-    if [[ "$DB_DUMP" == *.gz ]]; then
-        gunzip -c ${DB_DUMP} | $(drush sql:connect)
-    else
-        cat ${DB_DUMP} | $(drush sql:connect)
-    fi
+  echo -e "${green}Database ${DB_NAME} import completed successfully!${NC}"
 }
 
-# Main execution
-authenticate_acquia
-refresh_acquia_database "$@"
+# Import all databases
+for i in "${!DB_ARRAY[@]}"; do
+  DB_NAME=${DB_ARRAY[$i]}
+
+  if [[ $i -eq 0 ]]; then
+    # First database goes to default 'db' database
+    import_database "$DB_NAME" "db"
+  else
+    # Additional databases keep their original names
+    import_database "$DB_NAME" "$DB_NAME"
+  fi
+done
+
+# Function to update Drupal database settings for multiple databases
+update_drupal_database_settings() {
+  if [[ ${#DB_ARRAY[@]} -le 1 ]]; then
+    echo -e "${yellow}Single database detected, no additional database configuration needed${NC}"
+    return 0
+  fi
+
+  echo -e "${yellow}Multiple databases detected, updating Drupal database configuration...${NC}"
+
+  # Use DDEV_DOCROOT if available, otherwise fall back to docroot
+  DOCROOT_DIR="${DDEV_DOCROOT:-docroot}"
+  SETTINGS_FILE="${DOCROOT_DIR}/sites/default/settings.php"
+
+  # Create the database configuration block
+  DB_CONFIG=""
+  for i in "${!DB_ARRAY[@]}"; do
+    DB_NAME=${DB_ARRAY[$i]}
+
+    if [[ $i -eq 0 ]]; then
+      # Skip primary database as it's already configured as 'default'
+      continue
+    fi
+
+    # Add database connection for secondary databases
+    DB_CONFIG+="
+// Database connection for ${DB_NAME}
+\$databases['${DB_NAME}']['default'] = array(
+  'database' => '${DB_NAME}',
+  'username' => 'db',
+  'password' => 'db',
+  'host' => 'db',
+  'port' => '3306',
+  'driver' => 'mysql',
+  'prefix' => '',
+);
+"
+  done
+
+  # Only remove existing configuration if we have new configuration to add
+  if [[ -n "$DB_CONFIG" ]] && grep -q "// DDEV Multi-Database Configuration" "$SETTINGS_FILE"; then
+    echo -e "${yellow}Removing existing multi-database configuration...${NC}"
+    # Remove existing block
+    sed -i.bak '/\/\/ DDEV Multi-Database Configuration/,/\/\/ End DDEV Multi-Database Configuration/d' "$SETTINGS_FILE"
+  fi
+
+  # Check if DDEV settings block exists, if not restore it
+  if ! grep -q "// Automatically generated include for settings managed by ddev." "$SETTINGS_FILE"; then
+    echo -e "${yellow}Restoring missing DDEV settings section...${NC}"
+    cat >> "$SETTINGS_FILE" << 'EOF'
+
+// Automatically generated include for settings managed by ddev.
+$ddev_settings = __DIR__ . '/settings.ddev.php';
+if (getenv('IS_DDEV_PROJECT') == 'true' && is_readable($ddev_settings)) {
+  require $ddev_settings;
+  $settings['file_private_path'] = 'sites/default/files/private';
+}
+EOF
+  elif ! grep -q "file_private_path" "$SETTINGS_FILE"; then
+    echo -e "${yellow}Adding missing file_private_path setting to DDEV section...${NC}"
+    # Add the missing line before the closing brace of the DDEV if block
+    sed -i.bak '/require \$ddev_settings;/a\
+  $settings['\''file_private_path'\''] = '\''sites/default/files/private'\'';
+' "$SETTINGS_FILE"
+  fi
+
+  # Only add database configuration if there are secondary databases to configure
+  if [[ -n "$DB_CONFIG" ]]; then
+    # Add database configuration inside the DDEV settings block
+    TEMP_CONFIG_FILE="/tmp/ddev_db_temp_$$.php"
+    cat > "$TEMP_CONFIG_FILE" << EOF
+  // DDEV Multi-Database Configuration${DB_CONFIG}  // End DDEV Multi-Database Configuration
+EOF
+
+    # Use awk to insert the configuration inside the DDEV if block, before the closing brace
+    awk -v config_file="$TEMP_CONFIG_FILE" '
+      /^}$/ && in_ddev_block {
+        while ((getline line < config_file) > 0) {
+          print line
+        }
+        close(config_file)
+        in_ddev_block = 0
+      }
+      /getenv\(.*IS_DDEV_PROJECT.*\)/ { in_ddev_block = 1 }
+      { print }
+    ' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp"
+
+    mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    rm -f "$TEMP_CONFIG_FILE"
+  fi
+
+  echo -e "${green}Database configuration updated successfully!${NC}"
+
+  # Clean up backup file
+  rm -f "${SETTINGS_FILE}.bak"
+}
+
+# Update database settings if multiple databases exist
+update_drupal_database_settings
+
+echo -e "${yellow}Installing/updating composer packages...${NC}"
+composer install
+
+echo -e "${yellow}Running database updates...${NC}"
+drush updatedb -y
+
+echo -e "${yellow}Importing configuration...${NC}"
+drush config:import -y
+
+echo -e "${yellow}Clearing caches...${NC}"
+drush cr
+
+echo -e "${yellow}Adding Cypress test users...${NC}"
+# Use the DDEV command path since we're in a script
+if [ -x "../commands/host/cypress-users" ]; then
+  ../commands/host/cypress-users 2>/dev/null || echo "Cypress users command completed"
+else
+  echo "Cypress users command not found, skipping..."
+fi
+
+echo -e "${green}${divider}${NC}"
+echo -e "${green}Acquia database refresh complete!${NC}"
+echo -e "${green}${divider}${NC}"
