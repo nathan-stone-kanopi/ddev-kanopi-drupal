@@ -4,7 +4,6 @@ name: ddev-kanopi-drupal
 project_files:
 - commands/
 - php/
-- nginx_full/
 
 # DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
@@ -328,32 +327,37 @@ post_install_actions:
 
 - |
   #ddev-nodisplay
-  #ddev-description: Update Nginx proxy configuration with hosting platform values
-  echo "🔧 Updating Nginx proxy configuration..."
-  
+  #ddev-description: Configure platform-specific proxy settings
   # Get the environment variables from the config file
   HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
   HOSTING_SITE_VALUE=$(grep "HOSTING_SITE=" ./config.yaml | sed 's/.*HOSTING_SITE=\([^,]*\).*/\1/' | tr -d '"' || echo "")
   HOSTING_ENV_VALUE=$(grep "HOSTING_ENV=" ./config.yaml | sed 's/.*HOSTING_ENV=\([^,]*\).*/\1/' | tr -d '"' || echo "")
   
-  if [ -n "$HOSTING_SITE_VALUE" ] && [ -n "$HOSTING_ENV_VALUE" ]; then
-    # Platform-specific proxy configuration
-    if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
-      # Replace the placeholder in nginx config with Pantheon values
-      sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE/g" ./nginx_full/nginx-site.conf
-      sed -i.bak "s/HOSTING_DOMAIN/pantheonsite.io/g" ./nginx_full/nginx-site.conf
-      echo "✅ Updated nginx proxy to redirect to: $HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE.pantheonsite.io"
-    elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-      # Replace the placeholder in nginx config with Acquia values
-      sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_SITE_VALUE$HOSTING_ENV_VALUE/g" ./nginx_full/nginx-site.conf
-      sed -i.bak "s/HOSTING_DOMAIN/prod.acquia-sites.com/g" ./nginx_full/nginx-site.conf
-      echo "✅ Updated nginx proxy to redirect to: $HOSTING_SITE_VALUE$HOSTING_ENV_VALUE.prod.acquia-sites.com"
+  if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
+    echo "🔧 Setting up Nginx proxy configuration for Pantheon..."
+    
+    # Copy nginx configuration files for Pantheon
+    if [ -d "nginx_full" ]; then
+      cp -r nginx_full ../
+      echo "✅ Nginx configuration files copied"
+    else
+      echo "⚠️  nginx_full directory not found, skipping nginx setup"
     fi
-  else
-    echo "⚠️  Could not retrieve HOSTING_SITE and HOSTING_ENV values from config for nginx configuration"
-    echo "    HOSTING_PROVIDER_VALUE: '$HOSTING_PROVIDER_VALUE'"
-    echo "    HOSTING_SITE_VALUE: '$HOSTING_SITE_VALUE'"
-    echo "    HOSTING_ENV_VALUE: '$HOSTING_ENV_VALUE'"
+    
+    if [ -n "$HOSTING_SITE_VALUE" ] && [ -n "$HOSTING_ENV_VALUE" ]; then
+      # Configure nginx proxy for Pantheon
+      if [ -f "../nginx_full/nginx-site.conf" ]; then
+        sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE/g" ../nginx_full/nginx-site.conf
+        sed -i.bak "s/HOSTING_DOMAIN/pantheonsite.io/g" ../nginx_full/nginx-site.conf
+        echo "✅ Updated nginx proxy to redirect to: $HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE.pantheonsite.io"
+        rm -f ../nginx_full/nginx-site.conf.bak
+      fi
+    else
+      echo "⚠️  Could not retrieve HOSTING_SITE and HOSTING_ENV values for nginx configuration"
+    fi
+  elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
+    echo "🔧 Acquia uses Apache-FPM, skipping nginx proxy configuration"
+    echo "✅ No additional proxy configuration needed for Acquia"
   fi  
 
 
@@ -401,7 +405,15 @@ post_install_actions:
   echo "📦 Installed components:"
   echo "   • Enhanced multi-provider support (Pantheon/Acquia) with smart backup management"
   echo "   • 17 custom commands for Drupal development workflow"
-  echo "   • Nginx proxy configuration so you dont have to download assets locally"
+  
+  # Show platform-specific components
+  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
+    echo "   • Nginx proxy configuration so you dont have to download assets locally"
+  elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
+    echo "   • Apache-FPM webserver configuration for Acquia compatibility"
+  fi
+  
   echo "   • Theme development tools with Node.js/NPM support"
   echo "   • Cypress testing integration"
   echo "   • Drupal Recipe support"
@@ -507,10 +519,10 @@ removal_action:
   
   echo "✅ Custom commands removed"
   
-  # Remove PHP xdebug file and nginx config
+  # Remove PHP xdebug file and nginx config (if exists)
   rm -f php/xdebug.ini 2>/dev/null || true
-  rm -rf../xdebug 2>/dev/null || true
-  rm -f nginx_full/nginx-site.conf 2>/dev/null || true
+  rm -rf ../xdebug 2>/dev/null || true
+  rm -rf ../nginx_full 2>/dev/null || true
   
   # Remove any remaining Redis command directories
   rm -rf commands/redis 2>/dev/null || true
@@ -524,7 +536,7 @@ removal_action:
   echo "✅ Kanopi Drupal Add-on removed successfully!"
   echo "   • Caching add-ons (Redis/Memcached) and Solr add-ons uninstalled"
   echo "   • All 17 custom commands removed"
-  echo "   • Nginx proxy configuration removed"
+  echo "   • Platform-specific configurations removed (Nginx/Apache)"
   echo "   • Environment variables preserved (remove manually if needed)"
   echo ""
   echo "💡 Tip: Run 'ddev restart' to apply changes"
