@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-## Test Installation Script for DDEV Kanopi Pantheon Drupal Add-on
-## This script creates a test DDEV project and validates the interactive installation process
+## Test Installation Script for DDEV Kanopi Drupal Add-on
+## This script creates a test DDEV project and validates the interactive installation process for multi-platform support
 
 set -e
 
@@ -16,11 +16,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 BOLD='\033[1m'
 
-# Test configuration values - correct expected format
+# Test configuration values - updated for multi-platform support
+TEST_HOSTING_PROVIDER="pantheon"  # Default to pantheon for CI
 TEST_THEME="themes/custom/testtheme"  # THEME should be the path to the theme
 TEST_THEMENAME="testtheme"  # THEMENAME should be just the theme name
-TEST_PANTHEON_SITE="test-site-123"
-TEST_PANTHEON_ENV="dev"  # CI mode defaults to dev
+TEST_HOSTING_SITE="test-site-123"
+TEST_HOSTING_ENV="dev"  # CI mode defaults to dev
 TEST_MIGRATE_SOURCE="test-migration-source"  # CI mode uses this value
 TEST_MIGRATE_ENV="live"
 
@@ -30,7 +31,7 @@ TEST_DIR="${ADDON_PATH}/test/test-install"
 DRUPAL_DIR="${TEST_DIR}/drupal"
 TEST_PROJECT="test-kanopi-addon"
 
-printf "${BLUE}${BOLD}🧪 Testing DDEV Kanopi Pantheon Drupal Add-on Installation${NC}\n"
+printf "${BLUE}${BOLD}🧪 Testing DDEV Kanopi Drupal Add-on Installation${NC}\n"
 printf "${BLUE}================================================================${NC}\n"
 echo ""
 
@@ -93,26 +94,16 @@ ddev start
 printf "${GREEN}✅ DDEV started successfully${NC}\n"
 
 # Step 3: Install the add-on with automated responses
-printf "\n${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on...${NC}\n"
+printf "\n${YELLOW}📦 Installing Kanopi Drupal Add-on...${NC}\n"
 printf "${BLUE}This will test the interactive installation process${NC}\n"
 
-# Create input file for automated responses
-cat > input.txt << EOF
-${TEST_THEME}
-${TEST_THEMENAME}
-${TEST_PANTHEON_SITE}
-${TEST_PANTHEON_ENV}
-${TEST_MIGRATE_SOURCE}
-${TEST_MIGRATE_ENV}
-EOF
-
-# Install the add-on with automated input
-printf "${YELLOW}📦 Installing Kanopi Pantheon Drupal Add-on with test configuration...${NC}\n"
-printf "${BLUE}Providing automated responses to installation prompts${NC}\n"
+# Install the add-on with CI environment detection
+printf "${YELLOW}📦 Installing Kanopi Drupal Add-on with test configuration...${NC}\n"
+printf "${BLUE}Using CI environment detection for automated configuration${NC}\n"
 
 # Install the add-on using timeout to prevent hanging, with automated input
 printf "${YELLOW}Installing add-on with 5 minute timeout...${NC}\n"
-if timeout 300 bash -c "printf '$TEST_THEME\n$TEST_THEMENAME\n$TEST_PANTHEON_SITE\n$TEST_PANTHEON_ENV\n$TEST_MIGRATE_SOURCE\n$TEST_MIGRATE_ENV\n' | ddev add-on get '$ADDON_PATH'"; then
+if timeout 300 bash -c "DDEV_NONINTERACTIVE=true ddev add-on get '$ADDON_PATH'"; then
     printf "${GREEN}✅ Add-on installation completed${NC}\n"
 else
     printf "${RED}❌ Add-on installation failed or timed out${NC}\n"
@@ -128,9 +119,6 @@ else
 fi
 
 # Clean up test variables (no longer needed)
-
-# Clean up input file
-rm -f input.txt 2>/dev/null || true
 
 # Restart to apply changes
 printf "\n${YELLOW}🔄 Restarting DDEV to apply configuration...${NC}\n"
@@ -172,10 +160,11 @@ check_env_var() {
 }
 
 printf "\n${BLUE}Checking environment variables:${NC}\n"
+check_env_var "HOSTING_PROVIDER" "$TEST_HOSTING_PROVIDER" "false"
 check_env_var "THEME" "$TEST_THEME" "false"
 check_env_var "THEMENAME" "$TEST_THEMENAME" "false"
-check_env_var "PANTHEON_SITE" "$TEST_PANTHEON_SITE" "false"
-check_env_var "PANTHEON_ENV" "$TEST_PANTHEON_ENV" "false"
+check_env_var "HOSTING_SITE" "$TEST_HOSTING_SITE" "false"
+check_env_var "HOSTING_ENV" "$TEST_HOSTING_ENV" "false"
 check_env_var "MIGRATE_DB_SOURCE" "$TEST_MIGRATE_SOURCE" "true"
 check_env_var "MIGRATE_DB_ENV" "$TEST_MIGRATE_ENV" "true"
 
