@@ -36,6 +36,11 @@ health_checks() {
     assert_file_exists .ddev/commands/host/init
     assert_file_exists .ddev/commands/web/install-theme-tools
     
+    # Verify scripts folder was copied
+    assert_dir_exists .ddev/scripts
+    assert_file_exists .ddev/scripts/pantheon-refresh.sh
+    assert_file_exists .ddev/scripts/acquia-refresh.sh
+    
     # Verify environment variables are set
     run ddev exec printenv PANTHEON_SITE
     # Just check that we can run the command - the variable might be empty
@@ -94,4 +99,39 @@ health_checks() {
     
     # Run health checks
     health_checks
+}
+
+@test "scripts folder functionality" {
+    # Create a basic Drupal project
+    echo "Creating test Drupal project for scripts test"
+    mkdir -p web/sites/default
+    echo "<?php" > web/sites/default/settings.php
+    
+    # Initialize DDEV project
+    ddev config --project-name=${TEST_PROJECT_NAME} --project-type=drupal --docroot=web
+    ddev start
+    
+    # Pre-configure environment for Pantheon
+    ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=test_token
+    ddev config --web-environment-add=HOSTING_PROVIDER=pantheon
+    ddev config --web-environment-add=THEME=themes/custom/testtheme
+    ddev config --web-environment-add=THEMENAME=testtheme
+    ddev config --web-environment-add=HOSTING_SITE=test-site-123
+    ddev config --web-environment-add=HOSTING_ENV=dev
+    
+    # Install the add-on
+    ddev add-on get ${BATS_TEST_DIRNAME}/..
+    
+    # Verify scripts folder and files exist
+    assert_dir_exists .ddev/scripts
+    assert_file_exists .ddev/scripts/pantheon-refresh.sh
+    assert_file_exists .ddev/scripts/acquia-refresh.sh
+    
+    # Verify scripts are executable
+    [ -x .ddev/scripts/pantheon-refresh.sh ]
+    [ -x .ddev/scripts/acquia-refresh.sh ]
+    
+    # Verify refresh command can find the scripts (should not show "No such file or directory")
+    run ddev refresh --help
+    assert_success
 }

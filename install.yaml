@@ -4,6 +4,7 @@ name: ddev-kanopi-drupal
 project_files:
 - commands/
 - php/
+- scripts/
 
 # DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
@@ -519,8 +520,9 @@ removal_action:
   
   echo "✅ Custom commands removed"
   
-  # Remove PHP xdebug file and nginx config (if exists)
+  # Remove PHP xdebug file, scripts, and nginx config (if exists)
   rm -f php/xdebug.ini 2>/dev/null || true
+  rm -rf scripts 2>/dev/null || true
   rm -rf ../xdebug 2>/dev/null || true
   rm -rf ../nginx_full 2>/dev/null || true
   
