@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Remove UUIDs and _core metadata from Drupal config files.
-## Usage: uuid-rm [path/to/folder]
-## Example: ddev uuid-rm config/sync
+## Usage: recipe:uuid-rm [path/to/folder]
+## Example: ddev recipe:uuid-rm config/sync
+## Aliases: uuid-rm,recipe-uuid-rm
 
 # Abort if anything fails
 set -e
@@ -10,7 +11,7 @@ set -e
 # Ensure a path is provided.
 if [ -z "$1" ]; then
     echo -e "\n  ❌  Error: No directory provided."
-    echo -e "\n  🔹  Usage: ddev uuid-rm [path/to/folder]"
+    echo -e "\n  🔹  Usage: ddev recipe:uuid-rm [path/to/folder]"
     exit 1
 fi
 

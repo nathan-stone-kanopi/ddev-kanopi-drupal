@@ -150,11 +150,11 @@ This add-on provides 17 custom commands:
 | `ddev rebuild` | Host | Run composer install followed by database refresh | `ddev rebuild` | - |
 | `ddev recipe:apply <path>` | Web | Apply Drupal recipe with automatic cache clearing | `ddev recipe:apply ../recipes/my-recipe` | recipe, recipe-apply, ra |
 | `ddev recipe:unpack [recipe]` | Web | Unpack a recipe package or all recipes | `ddev recipe:unpack drupal/example_recipe` | recipe-unpack, ru |
+| `ddev recipe:uuid-rm <path>` | Web | Remove UUIDs from config files for recipe development | `ddev recipe:uuid-rm config/sync` | uuid-rm, recipe-uuid-rm |
 | `ddev refresh [env] [-f]` | Host | Smart database refresh from Pantheon with 12-hour backup age detection | `ddev refresh live -f` | - |
 | `ddev theme:build` | Web | Build production assets for the theme | `ddev theme:build` | production, theme-build, thb, theme-production |
 | `ddev theme:install` | Web | Set up Node.js, NPM, and build tools using .nvmrc | `ddev theme:install` | install-theme-tools, thi, theme-install |
 | `ddev theme:watch` | Web | Start theme development with file watching | `ddev theme:watch` | development, thw, theme-watch, theme-development |
-| `ddev uuid-rm <path>` | Web | Remove UUIDs from config files for recipe development | `ddev uuid-rm config/sync` | - |
 
 ## Smart Database Refresh
 
