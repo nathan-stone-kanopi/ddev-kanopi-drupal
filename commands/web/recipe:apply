@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 ## Description: Apply a Drupal Recipe.
-## Usage: recipe-apply <recipe-path>
-## Example: ddev recipe-apply ../recipes/recipe-name
-## Example: ddev recipe-apply core/recipes/standard
+## Usage: recipe:apply <recipe-path>
+## Example: ddev recipe:apply ../recipes/recipe-name
+## Example: ddev recipe:apply core/recipes/standard
+## Aliases: recipe,recipe-apply,ra
 
 # Abort if anything fails
 set -e

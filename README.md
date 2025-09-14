@@ -155,7 +155,8 @@ This add-on provides 17 custom commands organized by where they execute (host sy
 | `ddev migrate-prep-db` | Create secondary database for migrations | `ddev migrate-prep-db` |
 | `ddev npm <command>` | Run NPM commands in theme directory specified by THEME env var | `ddev npm run build` |
 | `ddev npx <command>` | Run NPX commands in theme directory | `ddev npx webpack --watch` |
-| `ddev recipe-apply <path>` | Apply Drupal recipe with automatic cache clearing | `ddev recipe-apply ../recipes/my-recipe` |
+| `ddev recipe:apply <path>` | Apply Drupal recipe with automatic cache clearing | `ddev recipe:apply ../recipes/my-recipe` |
+| `ddev recipe:unpack [recipe]` | Unpack a recipe package or all recipes | `ddev recipe:unpack drupal/example_recipe` |
 | `ddev tickle` | Keep Pantheon environment awake during long operations | `ddev tickle` |
 | `ddev uuid-rm <path>` | Remove UUIDs from config files for recipe development | `ddev uuid-rm config/sync` |
 
@@ -191,7 +192,8 @@ ddev refresh pr-123
 
 ## Recipe Development Workflow
 
-1. **Apply Recipe**: `ddev recipe-apply ../recipes/my-recipe`
+1. **Apply Recipe**: `ddev recipe:apply ../recipes/my-recipe`
+2. **Unpack Recipe**: `ddev recipe:unpack drupal/example_recipe`
 2. **Clean Config**: `ddev uuid-rm config/sync`
 3. **Export Config**: `ddev drush config:export`
 
