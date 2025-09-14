@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Install and set up theme development tools in DDEV
-## Usage: install-theme-tools
-## Example: ddev install-theme-tools
+## Usage: theme:install
+## Example: ddev theme:install
+## Aliases: install-theme-tools,thi,theme-install
 
 # Abort if anything fails
 set -e
@@ -59,5 +60,5 @@ npm run build || echo "npm run build"
 
 # Completion message
 echo -e "\n ${party} ${yellow} Theme setup complete! ${NC} ${reverseparty}"
-echo -e "To start watching for file changes, run: ${yellow}ddev npm run watch${NC}"
+echo -e "To start watching for file changes, run: ${yellow}ddev theme:watch${NC}"
 echo -e "${green}${divider}${NC}"

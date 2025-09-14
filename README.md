@@ -148,7 +148,9 @@ This add-on provides 17 custom commands organized by where they execute (host sy
 | Command | Description | Example |
 |---------|-------------|---------|
 | `ddev install-critical-tools` | Install Critical CSS generation tools | `ddev install-critical-tools` |
-| `ddev install-theme-tools` | Set up Node.js, NPM, and build tools using .nvmrc | `ddev install-theme-tools` |
+| `ddev theme:install` | Set up Node.js, NPM, and build tools using .nvmrc | `ddev theme:install` |
+| `ddev theme:watch` | Start theme development with file watching | `ddev theme:watch` |
+| `ddev theme:build` | Build production assets for the theme | `ddev theme:build` |
 | `ddev migrate-prep-db` | Create secondary database for migrations | `ddev migrate-prep-db` |
 | `ddev npm <command>` | Run NPM commands in theme directory specified by THEME env var | `ddev npm run build` |
 | `ddev npx <command>` | Run NPX commands in theme directory | `ddev npx webpack --watch` |
@@ -181,9 +183,9 @@ ddev refresh pr-123
 
 ## Theme Development Workflow
 
-1. **Setup**: `ddev install-theme-tools`
-2. **Development**: `ddev npm run watch` 
-3. **Build**: `ddev npm run build`
+1. **Setup**: `ddev theme:install`
+2. **Development**: `ddev theme:watch`
+3. **Build**: `ddev theme:build`
 4. **Critical CSS**: `ddev install-critical-tools`
 
 ## Recipe Development Workflow
@@ -418,14 +420,14 @@ if (getenv('IS_DDEV_PROJECT') == 'true') {
 
 #### 4. Review and Update Theme Tools Command
 
-Compare the provided `install-theme-tools` command with your project's current build process:
+Compare the provided `theme:install` command with your project's current build process:
 
 ```bash
 # Review the command
-ddev help install-theme-tools
+ddev help theme:install
 
 # Test the command in your theme directory
-ddev install-theme-tools
+ddev theme:install
 ```
 
 The command expects:
@@ -435,7 +437,7 @@ The command expects:
 
 If your theme build process differs, you may need to:
 - Update your theme's `package.json` scripts
-- Modify the `commands/web/install-theme-tools` file to match your workflow
+- Modify the `commands/web/theme:install` file to match your workflow
 - Create a `.nvmrc` file with your preferred Node.js version
 
 #### 5. Convert Existing Custom Commands
@@ -509,7 +511,7 @@ ddev init
 ### Verification Steps
 
 1. **Test database refresh**: `ddev refresh`
-2. **Test theme tools**: `ddev install-theme-tools`
+2. **Test theme tools**: `ddev theme:install`
 3. **Verify Pantheon connection**: `ddev exec terminus site:list`
 4. **Test proxy setup**: Visit your local site and check if assets load from Pantheon
 
@@ -523,8 +525,8 @@ ddev init
 # or individually
 ddev start                    # Start DDEV
 ddev refresh                  # Get latest database
-ddev install-theme-tools      # Set up theme tools (first time)
-ddev npm run watch           # Start theme development
+ddev theme:install           # Set up theme tools (first time)
+ddev theme:watch             # Start theme development
 
 # Testing workflow
 ddev cypress:install         # Set up Cypress (first time)
@@ -532,7 +534,7 @@ ddev cypress:users          # Create test users
 ddev cypress:run open       # Open Cypress
 
 # Deployment preparation
-ddev npm run build          # Build theme assets
+ddev theme:build             # Build theme assets
 ddev drush cache:rebuild    # Clear Drupal caches
 ```
 
@@ -583,7 +585,7 @@ ddev exec acli api:applications:find
 ddev exec node --version
 
 # Reinstall dependencies
-ddev install-theme-tools
+ddev theme:install
 ```
 
 ### Database Refresh Issues
