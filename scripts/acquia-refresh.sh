@@ -371,8 +371,8 @@ drush cr
 
 echo -e "${yellow}Adding Cypress test users...${NC}"
 # Use the DDEV command path since we're in a script
-if [ -x "../commands/host/cypress-users" ]; then
-  ../commands/host/cypress-users 2>/dev/null || echo "Cypress users command completed"
+if [ -x "../commands/host/cypress:users" ]; then
+  ../commands/host/cypress:users 2>/dev/null || echo "Cypress users command completed"
 else
   echo "Cypress users command not found, skipping..."
 fi

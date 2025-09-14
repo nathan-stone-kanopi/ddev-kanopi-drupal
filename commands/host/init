@@ -74,7 +74,7 @@ ddev auth ssh
 echo -e "\n${construction} ${yellow} Initializing Cypress...${NC} ${construction}\n"
 echo -e "This should require no input."
 echo -e "${green}${divider}${NC}"
-ddev install-cypress
+ddev cypress:install
 
 # Site initialization.
 echo -e "\n${construction} ${yellow} Composer install...${NC} ${construction}\n"

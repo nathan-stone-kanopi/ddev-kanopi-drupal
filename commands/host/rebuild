@@ -27,4 +27,4 @@ ddev drush updatedb -y
 echo "Clear cache"
 ddev drush cr -y
 
-ddev cypress-users
+ddev cypress:users

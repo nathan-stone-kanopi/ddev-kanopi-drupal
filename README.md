@@ -134,10 +134,10 @@ This add-on provides 17 custom commands organized by where they execute (host sy
 ### Host Commands (Execute on your machine)
 | Command | Description | Example |
 |---------|-------------|---------|
-| `ddev cypress <command>` | Run Cypress commands with environment support | `ddev cypress open` |
-| `ddev cypress-users` | Create default admin user for Cypress testing | `ddev cypress-users` |
+| `ddev cypress:run <command>` | Run Cypress commands with environment support | `ddev cypress:run open` |
+| `ddev cypress:users` | Create default admin user for Cypress testing | `ddev cypress:users` |
 | `ddev init` | Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh | `ddev init` |
-| `ddev install-cypress` | Install Cypress E2E testing dependencies | `ddev install-cypress` |
+| `ddev cypress:install` | Install Cypress E2E testing dependencies | `ddev cypress:install` |
 | `ddev open` | Open project URL in browser | `ddev open` |
 | `ddev phpmyadmin` | Launch PhpMyAdmin database interface | `ddev phpmyadmin` |
 | `ddev rebuild` | Run composer install followed by database refresh | `ddev rebuild` |
@@ -527,9 +527,9 @@ ddev install-theme-tools      # Set up theme tools (first time)
 ddev npm run watch           # Start theme development
 
 # Testing workflow
-ddev install-cypress         # Set up Cypress (first time)
-ddev cypress-users          # Create test users
-ddev cypress open           # Open Cypress
+ddev cypress:install         # Set up Cypress (first time)
+ddev cypress:users          # Create test users
+ddev cypress:run open       # Open Cypress
 
 # Deployment preparation
 ddev npm run build          # Build theme assets
