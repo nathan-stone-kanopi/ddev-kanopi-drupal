@@ -55,8 +55,8 @@ jobs:
           addon_ref: ${{ github.ref }}
           debug_enabled: ${{ github.event.inputs.debug_enabled }}
 
-  # Custom integration test using our comprehensive test script
-  integration-test:
+  # Comprehensive test using integration test script
+  comprehensive-test:
     runs-on: ubuntu-latest
     needs: test # Run after the standard test passes
     if: success()
