@@ -3,7 +3,7 @@ name: ddev-kanopi-drupal
 # Based on https://github.com/ddev/ddev/blob/HEAD/pkg/ddevapp/addons.go#L61
 project_files:
 - commands/
-- php/
+- config/
 - scripts/
 
 # DDEV version constraint
@@ -543,7 +543,6 @@ removal_action:
   echo "✅ Custom commands removed"
   
   # Remove PHP xdebug file, scripts, and nginx config (if exists)
-  rm -f php/xdebug.ini 2>/dev/null || true
   rm -f config/php_xdebug/xdebug.ini 2>/dev/null || true
   rm -rf scripts 2>/dev/null || true
   rm -rf ../xdebug 2>/dev/null || true
