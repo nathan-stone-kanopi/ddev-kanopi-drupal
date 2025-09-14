@@ -139,6 +139,7 @@ This add-on provides 17 custom commands organized by where they execute (host sy
 | `ddev init` | Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh | `ddev init` |
 | `ddev cypress:install` | Install Cypress E2E testing dependencies | `ddev cypress:install` |
 | `ddev open` | Open project URL in browser | `ddev open` |
+| `ddev project:configure` | Interactive reconfiguration wizard | `ddev project:configure` |
 | `ddev phpmyadmin` | Launch PhpMyAdmin database interface | `ddev phpmyadmin` |
 | `ddev rebuild` | Run composer install followed by database refresh | `ddev rebuild` |
 | `ddev refresh [env] [-f]` | Smart database refresh from Pantheon with 12-hour backup age detection | `ddev refresh live -f` |
