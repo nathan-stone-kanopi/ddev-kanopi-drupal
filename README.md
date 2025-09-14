@@ -147,7 +147,8 @@ This add-on provides 17 custom commands organized by where they execute (host sy
 ### Web Commands (Execute inside DDEV container)
 | Command | Description | Example |
 |---------|-------------|---------|
-| `ddev install-critical-tools` | Install Critical CSS generation tools | `ddev install-critical-tools` |
+| `ddev critical:install` | Install Critical CSS generation tools | `ddev critical:install` |
+| `ddev critical:run` | Run Critical CSS generation | `ddev critical:run` |
 | `ddev theme:install` | Set up Node.js, NPM, and build tools using .nvmrc | `ddev theme:install` |
 | `ddev theme:watch` | Start theme development with file watching | `ddev theme:watch` |
 | `ddev theme:build` | Build production assets for the theme | `ddev theme:build` |
@@ -186,7 +187,7 @@ ddev refresh pr-123
 1. **Setup**: `ddev theme:install`
 2. **Development**: `ddev theme:watch`
 3. **Build**: `ddev theme:build`
-4. **Critical CSS**: `ddev install-critical-tools`
+4. **Critical CSS**: `ddev critical:install` then `ddev critical:run`
 
 ## Recipe Development Workflow
 
