@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Initialize stack and testing environment in DDEV.
-## Usage: testenv [environment_name] [optional profile_or_recipe]
-## Example: ddev testenv my-env minimal
+## Usage: pantheon:testenv [environment_name] [optional profile_or_recipe]
+## Example: ddev pantheon:testenv my-env minimal
+## Aliases: testenv,pantheon-testenv
 ## OSTypes: darwin
 
 # Abort if anything fails
@@ -26,7 +27,7 @@ key='\xF0\x9F\x94\x91'
 
 # Check if at least one argument is provided.
 if [ -z "$1" ]; then
-    echo -e "\n ❌  Usage: ddev testenv <environment_name> [optional profile_or_recipe]"
+    echo -e "\n ❌  Usage: ddev pantheon:testenv <environment_name> [optional profile_or_recipe]"
     exit 1
 fi
 
