@@ -27,7 +27,7 @@ TEST_MIGRATE_ENV="live"
 
 # Get the absolute path to the add-on directory (script is now in tests/ subdirectory)
 ADDON_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TEST_DIR="${ADDON_PATH}/test/test-install"
+TEST_DIR="${ADDON_PATH}/tests/test-install"
 DRUPAL_DIR="${TEST_DIR}/drupal"
 TEST_PROJECT="test-kanopi-addon"
 

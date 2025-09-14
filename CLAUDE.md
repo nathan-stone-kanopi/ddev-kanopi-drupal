@@ -22,29 +22,33 @@ Commands are organized into two categories:
 
 ### Essential Commands
 - `ddev init`: Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh
-- `ddev refresh [env] [-f]`: Smart database refresh from Pantheon with backup age detection (12-hour threshold)
-- `ddev rebuild`: Composer install followed by database refresh
+- `ddev db:refresh [env] [-f]`: Smart database refresh from Pantheon with backup age detection (12-hour threshold)
+- `ddev db:rebuild`: Composer install followed by database refresh
 - `ddev open`: Open project URL in browser
 
 ### Development Workflow Commands
-- `ddev install-theme-tools`: Set up Node.js, NPM, and build tools for theme development
-- `ddev npm <command>`: Run NPM commands in theme directory
-- `ddev npx <command>`: Run NPX commands in theme directory
-- `ddev install-critical-tools`: Install Critical CSS generation tools
+- `ddev theme:install`: Set up Node.js, NPM, and build tools for theme development
+- `ddev theme:npm <command>`: Run NPM commands in theme directory
+- `ddev theme:npx <command>`: Run NPX commands in theme directory
+- `ddev critical:install`: Install Critical CSS generation tools
+- `ddev critical:run`: Run Critical CSS generation
+- `ddev theme:watch`: Start theme development with file watching
+- `ddev theme:build`: Build production theme assets
 
 ### Testing Commands
-- `ddev install-cypress`: Install Cypress E2E testing dependencies
-- `ddev cypress <command>`: Run Cypress commands with environment support
-- `ddev cypress-users`: Create default admin user for Cypress testing
-- `ddev testenv <name> [profile]`: Create isolated testing environment
+- `ddev cypress:install`: Install Cypress E2E testing dependencies
+- `ddev cypress:run <command>`: Run Cypress commands with environment support
+- `ddev cypress:users`: Create default admin user for Cypress testing
+- `ddev pantheon:testenv <name> [type]`: Create isolated testing environment
 
 ### Drupal Recipe Commands
-- `ddev recipe-apply <path>`: Apply Drupal recipe with cache management
-- `ddev uuid-rm <path>`: Remove UUIDs from config files (for recipe development)
+- `ddev recipe:apply <path>`: Apply Drupal recipe with cache management
+- `ddev recipe:uuid-rm <path>`: Remove UUIDs from config files (for recipe development)
 
 ### Migration and Database Commands
-- `ddev migrate-prep-db`: Create secondary database for migrations
-- `ddev tickle`: Keep Pantheon environment awake (useful for long migrations)
+- `ddev db:prep-migrate`: Create secondary database for migrations
+- `ddev pantheon:tickle`: Keep Pantheon environment awake (useful for long migrations)
+- `ddev pantheon:terminus <command>`: Run Terminus commands for Pantheon integration
 
 ### Utility Commands
 - `ddev phpmyadmin`: Launch PhpMyAdmin
@@ -67,7 +71,7 @@ environment_variables:
 
 ## Smart Refresh System
 
-The `ddev refresh` command includes intelligent backup management:
+The `ddev db:refresh` command includes intelligent backup management:
 - Automatically detects backup age (12-hour threshold)
 - Uses `-f` flag to force new backup creation
 - Supports any Pantheon environment (dev, test, live, multidev)
@@ -161,8 +165,39 @@ The add-on automatically installs and configures:
 - Redis add-on for caching
 - Solr add-on for search functionality
 
+## Cross-Repository Development
+
+**IMPORTANT**: When working on this Drupal add-on, you should also work on the companion WordPress add-on (`ddev-kanopi-wp`) to maintain consistency between both projects.
+
+### Maintaining Feature Parity
+Both add-ons should maintain feature parity where applicable:
+- **Shared commands**: Database, theme, testing, and utility commands should have identical functionality
+- **Configuration patterns**: Environment variables, file structures, and naming conventions should align
+- **Documentation**: README files, command help text, and examples should be consistent
+- **CI/CD**: Both projects should have identical GitHub Actions and CircleCI configurations
+
+### Development Workflow
+When making changes to this repository:
+1. **Assess applicability**: Determine if the change should also be applied to the WordPress add-on
+2. **Mirror changes**: If applicable, make equivalent changes in both repositories
+3. **Test both**: Ensure changes work correctly in both Drupal and WordPress contexts
+4. **Update documentation**: Keep README and CLAUDE.md files synchronized
+5. **Maintain aliases**: Preserve backward compatibility in both add-ons
+
+### Platform-Specific Differences
+While maintaining consistency, respect platform differences:
+- **Drupal-specific**: Recipe commands (`recipe:apply`, `recipe:uuid-rm`)
+- **WordPress-specific**: Block creation (`theme:create-block`), admin user management (`wp:restore-admin-user`)
+- **Hosting providers**: Both support Pantheon, but WordPress also supports WPEngine and Kinsta
+- **File structures**: Drupal uses different directory conventions than WordPress
+
+### Repository Locations
+- **Drupal add-on**: https://github.com/kanopi/ddev-kanopi-drupal
+- **WordPress add-on**: https://github.com/kanopi/ddev-kanopi-wp
+
 ## Testing Notes
 - Always test changes to install.yaml thoroughly
 - Use bats tests for quick validation during development
 - Run integration tests before major releases
 - Tests pre-configure environment variables to avoid interactive prompts
+- Test changes in both add-ons when making cross-repository updates

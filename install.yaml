@@ -338,11 +338,11 @@ post_install_actions:
     echo "🔧 Setting up Nginx proxy configuration for Pantheon..."
     
     # Copy nginx configuration files for Pantheon
-    if [ -d "nginx_full" ]; then
-      cp -r nginx_full ../
+    if [ -d "config/nginx_full" ]; then
+      cp -r config/nginx_full ../
       echo "✅ Nginx configuration files copied"
     else
-      echo "⚠️  nginx_full directory not found, skipping nginx setup"
+      echo "⚠️  config/nginx_full directory not found, skipping nginx setup"
     fi
     
     if [ -n "$HOSTING_SITE_VALUE" ] && [ -n "$HOSTING_ENV_VALUE" ]; then
@@ -359,7 +359,24 @@ post_install_actions:
   elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
     echo "🔧 Acquia uses Apache-FPM, skipping nginx proxy configuration"
     echo "✅ No additional proxy configuration needed for Acquia"
-  fi  
+  fi
+
+  # Copy PHP configuration files
+  echo ""
+  echo "🔧 Setting up PHP configuration..."
+  if [ -d "config/php" ]; then
+    cp -r config/php ../
+    echo "✅ PHP configuration files copied"
+  else
+    echo "⚠️  config/php directory not found, skipping PHP setup"
+  fi
+
+  if [ -d "config/php_xdebug" ]; then
+    cp -r config/php_xdebug ../
+    echo "✅ PHP xDebug configuration files copied"
+  else
+    echo "⚠️  config/php_xdebug directory not found, skipping xDebug setup"
+  fi
 
 
 - |
@@ -395,7 +412,7 @@ post_install_actions:
   echo ""
   echo "📦 Ignore xdebug output folder..."
   mkdir -p ../xdebug
-  echo "Output directory for cachegrind files.  See .ddev/php/xdebug.ini" > ../xdebug/README.md
+  echo "Output directory for cachegrind files.  See .ddev/config/php_xdebug/xdebug.ini" > ../xdebug/README.md
   echo "xdebug/cachegrind.*" >> ../.gitignore
 
 # Explain the installed components
@@ -502,6 +519,7 @@ removal_action:
   rm -f commands/host/phpmyadmin 2>/dev/null || true
   rm -f commands/host/rebuild 2>/dev/null || true
   rm -f commands/host/refresh 2>/dev/null || true
+  rm -f commands/host/db:rebuild 2>/dev/null || true
   rm -f commands/host/solrtail.example 2>/dev/null || true
   rm -f commands/host/testenv 2>/dev/null || true
   rm -f commands/host/README.txt 2>/dev/null || true
@@ -512,8 +530,12 @@ removal_action:
   rm -f commands/web/migrate-prep-db 2>/dev/null || true
   rm -f commands/web/npm 2>/dev/null || true
   rm -f commands/web/npx 2>/dev/null || true
+  rm -f commands/web/db:prep-migrate 2>/dev/null || true
+  rm -f commands/web/theme:npm 2>/dev/null || true
+  rm -f commands/web/theme:npx 2>/dev/null || true
   rm -f commands/web/recipe-apply 2>/dev/null || true
   rm -f commands/web/refresh 2>/dev/null || true
+  rm -f commands/web/db:refresh 2>/dev/null || true
   rm -f commands/web/tickle 2>/dev/null || true
   rm -f commands/web/uuid-rm 2>/dev/null || true
   rm -f commands/web/README.txt 2>/dev/null || true
@@ -522,6 +544,7 @@ removal_action:
   
   # Remove PHP xdebug file, scripts, and nginx config (if exists)
   rm -f php/xdebug.ini 2>/dev/null || true
+  rm -f config/php_xdebug/xdebug.ini 2>/dev/null || true
   rm -rf scripts 2>/dev/null || true
   rm -rf ../xdebug 2>/dev/null || true
   rm -rf ../nginx_full 2>/dev/null || true
