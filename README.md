@@ -141,7 +141,7 @@ This add-on provides 17 custom commands:
 | `ddev migrate-prep-db` | Web | Create secondary database for migrations | `ddev migrate-prep-db` | - |
 | `ddev npm <command>` | Web | Run NPM commands in theme directory specified by THEME env var | `ddev npm run build` | - |
 | `ddev npx <command>` | Web | Run NPX commands in theme directory | `ddev npx webpack --watch` | - |
-| `ddev open` | Host | Open project URL in browser | `ddev open` | - |
+| `ddev open [service]` | Web | Open the site or admin in your default browser | `ddev open` or `ddev open cms` | - |
 | `ddev pantheon:testenv <name> [profile]` | Host | Create isolated testing environment with optional install profile | `ddev pantheon:testenv my-test minimal` | testenv, pantheon-testenv |
 | `ddev pantheon:terminus <command>` | Host | Run Terminus commands for Pantheon integration | `ddev pantheon:terminus site:list` | terminus, pantheon-terminus |
 | `ddev pantheon:tickle` | Web | Keep Pantheon environment awake during long operations | `ddev pantheon:tickle` | tickle, pantheon-tickle |

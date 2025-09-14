@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 
 ## Description: Runs NPM commands on the theme.
-## Usage: npm
-## Example: ddev npm
+## Usage: npm <command> [args...]
+## Example: ddev npm install
+##          ddev npm run build
 
 # Abort if anything fails
 set -e
 
-#-------------------------- Settings --------------------------------
+# Get theme configuration from environment variables
+THEME_PATH=$(printenv THEME 2>/dev/null || echo "")
+DOCROOT=$(printenv DDEV_DOCROOT 2>/dev/null || echo "web")
 
-# Define paths.
-FULL_THEME_PATH="/var/www/html/${DDEV_DOCROOT}/${THEME}"
+# Check if theme is configured and exists
+if [ -n "$THEME_PATH" ]; then
+    FULL_THEME_PATH="/var/www/html/${DOCROOT}/${THEME_PATH}"
 
-#-------------------------- Execution -------------------------------------
-
-cd ${FULL_THEME_PATH}
-
-npm "$@"
+    if [ -d "${FULL_THEME_PATH}" ]; then
+        cd "${FULL_THEME_PATH}"
+        npm "$@"
+    else
+        echo "Theme directory not found: ${FULL_THEME_PATH}"
+        echo "Please ensure your theme is located at the correct path or update THEME environment variable in .ddev/config.yaml"
+        exit 1
+    fi
+else
+    # Run in project root if no theme configured
+    npm "$@"
+fi
