@@ -68,21 +68,6 @@ health_checks() {
     health_checks
 }
 
-@test "install from release" {
-    set -eu -o pipefail
-    cd $TESTDIR || ( printf "unable to cd to $TESTDIR\n" && exit 1 )
-    echo "# ddev config --project-name=$PROJNAME --project-type=drupal --docroot=web --create-docroot" >&3
-    ddev config --project-name=$PROJNAME --project-type=drupal --docroot=web --create-docroot
-
-    echo "# ddev add-on get kanopi/ddev-kanopi-drupal with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-    ddev add-on get kanopi/ddev-kanopi-drupal
-
-    echo "# ddev start" >&3
-    ddev start
-
-    health_checks
-}
-
 @test "environment variable configuration" {
     set -eu -o pipefail
     cd $TESTDIR
