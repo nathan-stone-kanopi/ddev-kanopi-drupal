@@ -4,7 +4,7 @@
 ## Usage: drupal-open [service]
 ## Example: ddev drupal-open      # Opens the site
 ##          ddev drupal-open cms  # Opens Drupal admin
-## Aliases: drupal:open,open,drupal-open
+## Aliases: drupal:open,open
 
 SERVICE="${1:-}"
 

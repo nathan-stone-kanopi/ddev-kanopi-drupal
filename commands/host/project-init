@@ -3,7 +3,7 @@
 ## Description: Initialize local development.
 ## Usage: project-init
 ## Example: "ddev project-init"
-## Aliases: project:init,init,project-init
+## Aliases: project:init,init
 ## OSTypes: darwin
 
 #-------------------------- Helper functions ------------------------------

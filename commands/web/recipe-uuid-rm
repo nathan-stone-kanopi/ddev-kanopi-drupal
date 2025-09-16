@@ -3,7 +3,7 @@
 ## Description: Remove UUIDs and _core metadata from Drupal config files.
 ## Usage: recipe-uuid-rm [path/to/folder]
 ## Example: ddev recipe-uuid-rm config/sync
-## Aliases: recipe:uuid-rm,uuid-rm,recipe-uuid-rm
+## Aliases: recipe:uuid-rm,uuid-rm
 
 # Abort if anything fails
 set -e

@@ -3,7 +3,7 @@
 ## Description: Interactive reconfiguration wizard for Kanopi Drupal DDEV
 ## Usage: project-configure
 ## Example: "ddev project-configure"
-## Aliases: project:configure,configure,project-configure,prc
+## Aliases: project:configure,configure,prc
 
 #ddev-generated
 

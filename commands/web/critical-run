@@ -3,7 +3,7 @@
 ## Description: Run Critical CSS Commands
 ## Usage: critical-run
 ## Example: "ddev critical-run"
-## Aliases: critical:run,critical,crr,critical-run
+## Aliases: critical:run,critical,crr
 
 # Abort if anything fails
 set -e

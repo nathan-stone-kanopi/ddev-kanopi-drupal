@@ -3,7 +3,7 @@
 ## Description: Install and set up theme development tools in DDEV
 ## Usage: theme-install
 ## Example: ddev theme-install
-## Aliases: theme:install,install-theme-tools,thi,theme-install
+## Aliases: theme:install,install-theme-tools,thi
 
 # Abort if anything fails
 set -e

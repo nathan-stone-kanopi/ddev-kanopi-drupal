@@ -3,7 +3,7 @@
 ## Description: Runs composer install and database refresh.
 ## Usage: db-rebuild
 ## Example: "ddev db-rebuild"
-## Aliases: db:rebuild,rebuild,db-rebuild,dbreb
+## Aliases: db:rebuild,rebuild,dbreb
 ## OSTypes: darwin
 
 green='\033[0;32m'

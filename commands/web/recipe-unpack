@@ -4,7 +4,7 @@
 ## Usage: recipe-unpack [recipe-name]
 ## Example: ddev recipe-unpack drupal/example_recipe
 ## Example: ddev recipe-unpack (unpacks all recipes)
-## Aliases: recipe:unpack,recipe-unpack,ru
+## Aliases: recipe:unpack,ru
 
 # Abort if anything fails
 set -e

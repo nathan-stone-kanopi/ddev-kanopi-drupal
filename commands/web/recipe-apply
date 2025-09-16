@@ -4,7 +4,7 @@
 ## Usage: recipe-apply <recipe-path>
 ## Example: ddev recipe-apply ../recipes/recipe-name
 ## Example: ddev recipe-apply core/recipes/standard
-## Aliases: recipe:apply,recipe,recipe-apply,ra
+## Aliases: recipe:apply,recipe,ra
 
 # Abort if anything fails
 set -e

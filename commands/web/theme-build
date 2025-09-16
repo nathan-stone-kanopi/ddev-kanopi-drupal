@@ -3,7 +3,7 @@
 ## Description: Build production assets for the theme
 ## Usage: theme-build
 ## Example: "ddev theme-build"
-## Aliases: theme:build,production,theme-build,thb,theme-production
+## Aliases: theme:build,production,thb,theme-production
 
 # Abort if anything fails
 set -e

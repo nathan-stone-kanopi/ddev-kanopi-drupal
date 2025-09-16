@@ -3,7 +3,7 @@
 ## Description: Start theme development with file watching
 ## Usage: theme-watch
 ## Example: "ddev theme-watch"
-## Aliases: theme:watch,development,thw,theme-watch,theme-development
+## Aliases: theme:watch,development,thw,theme-development
 
 # Abort if anything fails
 set -e

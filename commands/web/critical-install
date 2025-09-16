@@ -3,7 +3,7 @@
 ## Description: Initialize/reinstall tools needed for critical CSS.
 ## Usage: critical-install
 ## Example: ddev critical-install
-## Aliases: critical:install,install-critical-tools,cri,critical-install
+## Aliases: critical:install,install-critical-tools,cri
 
 #-------------------------- Helper functions -----------------------------------
 

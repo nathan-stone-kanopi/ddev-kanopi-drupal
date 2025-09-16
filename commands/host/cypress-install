@@ -3,7 +3,7 @@
 ## Description: Install the node packages for cypress on the developers local machine
 ## Usage: cypress-install
 ## Example: "ddev cypress-install"
-## Aliases: cypress:install,cyi,cypress-install,install-cypress
+## Aliases: cypress:install,cyi,install-cypress
 ## OSTypes: darwin
 
 # Make sure NVM works

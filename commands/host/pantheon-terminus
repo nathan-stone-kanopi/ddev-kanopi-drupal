@@ -6,7 +6,7 @@
 ##        ddev pantheon-terminus site:list
 ##        ddev pantheon-terminus backup:create site.env --element=database
 ##        ddev pantheon-terminus backup:get site.env --element=database
-## Aliases: pantheon:terminus,terminus,pantheon-terminus
+## Aliases: pantheon:terminus,terminus
 
 #ddev-generated
 

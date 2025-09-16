@@ -3,7 +3,7 @@
 ## Description: Continuously wake up a Pantheon environment.
 ## Usage: pantheon-tickle
 ## Example: ddev pantheon-tickle
-## Aliases: pantheon:tickle,tickle,pantheon-tickle
+## Aliases: pantheon:tickle,tickle
 
 # Abort if anything fails
 set -e

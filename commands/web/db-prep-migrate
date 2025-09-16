@@ -3,7 +3,7 @@
 ## Description: Create and configure the migration database inside the DDEV web container
 ## Usage: db-prep-migrate
 ## Example: ddev db-prep-migrate
-## Aliases: db:prep-migrate,migrate-prep-db,db-prep-migrate,db-mpdb
+## Aliases: db:prep-migrate,migrate-prep-db
 
 # Abort if anything fails
 set -e
