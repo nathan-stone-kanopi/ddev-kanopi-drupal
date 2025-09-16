@@ -3,7 +3,7 @@
 [![tests](https://github.com/kanopi/ddev-kanopi-drupal/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/kanopi/ddev-kanopi-drupal/actions/workflows/test.yml?query=branch%3Amain)
 [![last commit](https://img.shields.io/github/last-commit/kanopi/ddev-kanopi-drupal)](https://github.com/kanopi/ddev-kanopi-drupal/commits)
 [![release](https://img.shields.io/github/v/release/kanopi/ddev-kanopi-drupal)](https://github.com/kanopi/ddev-kanopi-drupal/releases/latest)
-[![project is maintained](https://img.shields.io/maintenance/yes/2025.svg)
+[![project is maintained](https://img.shields.io/maintenance/yes/2025.svg)]
 
 A comprehensive DDEV add-on that provides Kanopi's battle-tested workflow for Drupal development. This add-on includes complete tooling for modern Drupal development with multi-provider hosting support.
 
@@ -168,30 +168,30 @@ The enhanced `ddev db-refresh` command includes intelligent backup management:
 
 ```bash
 # Refresh from dev (default)
-ddev db:refresh
+ddev db-refresh
 
 # Refresh from live environment
-ddev db:refresh live
+ddev db-refresh live
 
 # Force new backup creation
-ddev db:refresh -f
+ddev db-refresh -f
 
 # Refresh from multidev environment
-ddev db:refresh pr-123
+ddev db-refresh pr-123
 ```
 
 ## Theme Development Workflow
 
-1. **Setup**: `ddev theme:install`
-2. **Development**: `ddev theme:watch`
-3. **Build**: `ddev theme:build`
-4. **Critical CSS**: `ddev critical:install` then `ddev critical:run`
+1. **Setup**: `ddev theme-install`
+2. **Development**: `ddev theme-watch`
+3. **Build**: `ddev theme-build`
+4. **Critical CSS**: `ddev critical-install` then `ddev critical-run`
 
 ## Recipe Development Workflow
 
-1. **Apply Recipe**: `ddev recipe:apply ../recipes/my-recipe`
-2. **Unpack Recipe**: `ddev recipe:unpack drupal/example_recipe`
-2. **Clean Config**: `ddev recipe:uuid-rm config/sync`
+1. **Apply Recipe**: `ddev recipe-apply ../recipes/my-recipe`
+2. **Unpack Recipe**: `ddev recipe-unpack drupal/example_recipe`
+2. **Clean Config**: `ddev recipe-uuid-rm config/sync`
 3. **Export Config**: `ddev drush config:export`
 
 ## Search Integration
@@ -424,10 +424,10 @@ Compare the provided `theme:install` command with your project's current build p
 
 ```bash
 # Review the command
-ddev help theme:install
+ddev help theme-install
 
 # Test the command in your theme directory
-ddev theme:install
+ddev theme-install
 ```
 
 The command expects:
@@ -483,7 +483,7 @@ This project supports both DDEV and Docksal for local development.
 4. **Initialize Project**:
    ```bash
    ddev start
-   ddev project:init
+   ddev project-init
    ```
 
 ### Available DDEV Commands
@@ -498,7 +498,7 @@ After configuration, initialize your project:
 ```bash
 # Start DDEV and run initialization
 ddev start
-ddev project:init
+ddev project-init
 
 # This will:
 # - Install Lefthook git hooks
@@ -510,9 +510,9 @@ ddev project:init
 
 ### Verification Steps
 
-1. **Test database refresh**: `ddev db:refresh`
-2. **Test theme tools**: `ddev theme:install`
-3. **Verify Pantheon connection**: `ddev pantheon:terminus site:list`
+1. **Test database refresh**: `ddev db-refresh`
+2. **Test theme tools**: `ddev theme-install`
+3. **Verify Pantheon connection**: `ddev pantheon-terminus site:list`
 4. **Test proxy setup**: Visit your local site and check if assets load from Pantheon
 
 ## Quick Reference
@@ -520,21 +520,21 @@ ddev project:init
 ### Common Workflow
 ```bash
 # Daily development workflow
-ddev project:init
+ddev project-init
 
 # or individually
 ddev start                    # Start DDEV
-ddev db:refresh               # Get latest database
-ddev theme:install            # Set up theme tools (first time)
-ddev theme:watch              # Start theme development
+ddev db-refresh               # Get latest database
+ddev theme-install            # Set up theme tools (first time)
+ddev theme-watch              # Start theme development
 
 # Testing workflow
-ddev cypress:install          # Set up Cypress (first time)
-ddev cypress:users            # Create test users
-ddev cypress:run open         # Open Cypress
+ddev cypress-install          # Set up Cypress (first time)
+ddev cypress-users            # Create test users
+ddev cypress-run open         # Open Cypress
 
 # Deployment preparation
-ddev theme:build              # Build theme assets
+ddev theme-build              # Build theme assets
 ddev drush cache:rebuild      # Clear Drupal caches
 ```
 
@@ -563,7 +563,7 @@ ddev drush cache:rebuild      # Clear Drupal caches
 ddev exec printenv TERMINUS_MACHINE_TOKEN
 
 # Re-authenticate manually
-ddev pantheon:terminus auth:login --machine-token="your_token"
+ddev pantheon-terminus auth:login --machine-token="your_token"
 ```
 
 ### Acquia Authentication Issues
@@ -585,7 +585,7 @@ ddev exec acli api:applications:find
 ddev exec node --version
 
 # Reinstall dependencies
-ddev theme:install
+ddev theme-install
 ```
 
 ### Database Refresh Issues
@@ -593,10 +593,10 @@ ddev theme:install
 **For Pantheon:**
 ```bash
 # Check Pantheon connection
-ddev pantheon:terminus site:list
+ddev pantheon-terminus site:list
 
 # Force new backup
-ddev db:refresh -f
+ddev db-refresh -f
 ```
 
 **For Acquia:**
@@ -608,7 +608,7 @@ ddev exec acli api:applications:find
 ddev exec acli api:environments:find HOSTING_SITE
 
 # Force new backup
-ddev db:refresh -f
+ddev db-refresh -f
 ```
 
 ## Platform-Specific Configurations

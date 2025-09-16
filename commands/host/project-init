@@ -25,8 +25,8 @@ lightning='\xE2\x9A\xA1'
 drop='\xF0\x9F\x92\xA7'
 shark='\xF0\x9F\xA6\x88'
 gear='\xEF\xB8\x8F'
-theme_tools_command='ddev theme:install'
-critical_tools_command='ddev critical:install'
+theme_tools_command='ddev theme-install'
+critical_tools_command='ddev critical-install'
 key='\xF0\x9F\x94\x91'
 lock='\xF0\x9F\x94\x92'
 arm='\xF0\x9F\x92\xAA'
@@ -91,7 +91,7 @@ ddev composer install
 # fin solr-create-core
 
 # Get the database.
-ddev refresh
+ddev db-refresh
 
 # Logging into to Drupal.
 echo -e "\n${lock} ${yellow} Logging you in.${NC} ${lock}"
