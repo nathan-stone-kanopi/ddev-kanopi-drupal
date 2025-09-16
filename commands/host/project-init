@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Initialize local development.
-## Usage: init
-## Example: "ddev init"
+## Usage: project-init
+## Example: "ddev project-init"
+## Aliases: project:init,init,project-init
 ## OSTypes: darwin
 
 #-------------------------- Helper functions ------------------------------
@@ -74,7 +75,7 @@ ddev auth ssh
 echo -e "\n${construction} ${yellow} Initializing Cypress...${NC} ${construction}\n"
 echo -e "This should require no input."
 echo -e "${green}${divider}${NC}"
-ddev cypress:install
+ddev cypress-install
 
 # Site initialization.
 echo -e "\n${construction} ${yellow} Composer install...${NC} ${construction}\n"

@@ -21,34 +21,34 @@ Commands are organized into two categories:
 ## Common Development Commands
 
 ### Essential Commands
-- `ddev init`: Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh
-- `ddev db:refresh [env] [-f]`: Smart database refresh from Pantheon with backup age detection (12-hour threshold)
-- `ddev db:rebuild`: Composer install followed by database refresh
-- `ddev open`: Open project URL in browser
+- `ddev project-init`: Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh
+- `ddev db-refresh [env] [-f]`: Smart database refresh from Pantheon with backup age detection (12-hour threshold)
+- `ddev db-rebuild`: Composer install followed by database refresh
+- `ddev drupal-open`: Open project URL in browser
 
 ### Development Workflow Commands
-- `ddev theme:install`: Set up Node.js, NPM, and build tools for theme development
-- `ddev theme:npm <command>`: Run NPM commands in theme directory
-- `ddev theme:npx <command>`: Run NPX commands in theme directory
-- `ddev critical:install`: Install Critical CSS generation tools
-- `ddev critical:run`: Run Critical CSS generation
-- `ddev theme:watch`: Start theme development with file watching
-- `ddev theme:build`: Build production theme assets
+- `ddev theme-install`: Set up Node.js, NPM, and build tools for theme development
+- `ddev theme-npm <command>`: Run NPM commands in theme directory
+- `ddev theme-npx <command>`: Run NPX commands in theme directory
+- `ddev critical-install`: Install Critical CSS generation tools
+- `ddev critical-run`: Run Critical CSS generation
+- `ddev theme-watch`: Start theme development with file watching
+- `ddev theme-build`: Build production theme assets
 
 ### Testing Commands
-- `ddev cypress:install`: Install Cypress E2E testing dependencies
-- `ddev cypress:run <command>`: Run Cypress commands with environment support
-- `ddev cypress:users`: Create default admin user for Cypress testing
-- `ddev pantheon:testenv <name> [type]`: Create isolated testing environment
+- `ddev cypress-install`: Install Cypress E2E testing dependencies
+- `ddev cypress-run <command>`: Run Cypress commands with environment support
+- `ddev cypress-users`: Create default admin user for Cypress testing
+- `ddev pantheon-testenv <name> [type]`: Create isolated testing environment
 
 ### Drupal Recipe Commands
-- `ddev recipe:apply <path>`: Apply Drupal recipe with cache management
-- `ddev recipe:uuid-rm <path>`: Remove UUIDs from config files (for recipe development)
+- `ddev recipe-apply <path>`: Apply Drupal recipe with cache management
+- `ddev recipe-uuid-rm <path>`: Remove UUIDs from config files (for recipe development)
 
 ### Migration and Database Commands
-- `ddev db:prep-migrate`: Create secondary database for migrations
-- `ddev pantheon:tickle`: Keep Pantheon environment awake (useful for long migrations)
-- `ddev pantheon:terminus <command>`: Run Terminus commands for Pantheon integration
+- `ddev db-prep-migrate`: Create secondary database for migrations
+- `ddev pantheon-tickle`: Keep Pantheon environment awake (useful for long migrations)
+- `ddev pantheon-terminus <command>`: Run Terminus commands for Pantheon integration
 
 ### Utility Commands
 - `ddev phpmyadmin`: Launch PhpMyAdmin
@@ -71,7 +71,7 @@ environment_variables:
 
 ## Smart Refresh System
 
-The `ddev db:refresh` command includes intelligent backup management:
+The `ddev db-refresh` command includes intelligent backup management:
 - Automatically detects backup age (12-hour threshold)
 - Uses `-f` flag to force new backup creation
 - Supports any Pantheon environment (dev, test, live, multidev)

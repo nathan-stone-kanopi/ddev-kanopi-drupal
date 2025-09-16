@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Runs composer install and database refresh.
-## Usage: db:rebuild
-## Example: "ddev db:rebuild"
-## Aliases: rebuild,db-rebuild,dbreb
+## Usage: db-rebuild
+## Example: "ddev db-rebuild"
+## Aliases: db:rebuild,rebuild,db-rebuild,dbreb
 ## OSTypes: darwin
 
 green='\033[0;32m'
@@ -17,7 +17,7 @@ echo -e "${green}${divider}${NC}"
 ddev composer install
 
 # Database.
-ddev db:refresh
+ddev db-refresh
 
 echo "Clear cache"
 ddev drush cr -y
@@ -28,4 +28,4 @@ ddev drush updatedb -y
 echo "Clear cache"
 ddev drush cr -y
 
-ddev cypress:users
+ddev cypress-users

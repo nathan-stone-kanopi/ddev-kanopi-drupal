@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-## Description: Run Critical CSS Commands
-## Usage: critical:run
-## Example: "ddev critical:run"
-## Aliases: critical,crr,critical-run
+## Description: Build production assets for the theme
+## Usage: theme-build
+## Example: "ddev theme-build"
+## Aliases: theme:build,production,theme-build,thb,theme-production
 
 # Abort if anything fails
 set -e
@@ -16,8 +16,10 @@ NC='\033[0m'
 
 divider='===================================================\n'
 construction='\xF0\x9F\x9A\xA7'
+party='\xF0\x9F\x8E\x88 \xF0\x9F\x8E\x89 \xF0\x9F\x8E\x8A'
+reverseparty='\xF0\x9F\x8E\x8A \xF0\x9F\x8E\x89 \xF0\x9F\x8E\x88'
 rocket='\xF0\x9F\x9A\x80'
-lightning='\xE2\x9A\xA1'
+shark='\xF0\x9F\xA6\x88'
 
 #-------------------------- Settings --------------------------------
 
@@ -37,12 +39,12 @@ fi
 if [ ! -f "$FULL_THEME_PATH/package.json" ]; then
     echo -e "\n${yellow}package.json not found in theme directory: $FULL_THEME_PATH${NC}"
     echo -e "Please ensure your theme has a package.json file with npm scripts configured"
-    echo -e "Run ${yellow}ddev critical:install${NC} to set up critical CSS tools first"
+    echo -e "Run ${yellow}ddev theme-install${NC} to set up theme development tools first"
     exit 1
 fi
 
-# Critical CSS message
-echo -e "\n ${lightning} ${yellow} Running Critical CSS generation. ${NC} ${lightning}\n"
+# Theme build message
+echo -e "\n ${shark} ${yellow} Building production assets for theme. ${NC} ${shark}\n"
 echo -e "${green}${divider}${NC}"
 
 # Move to the theme directory
@@ -71,10 +73,11 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Run Critical CSS generation
-echo -e "\n ${construction} ${yellow} Generating Critical CSS... ${NC} ${construction}"
+# Build production assets
+echo -e "\n ${construction} ${yellow} Building production assets... ${NC} ${construction}"
 echo -e "${green}${divider}${NC}"
-npm run criticalcss
+npm run build
 
-echo -e "\n${yellow}Critical CSS generation completed!${NC}"
+# Completion message
+echo -e "\n ${party} ${yellow} Production build completed successfully! ${NC} ${reverseparty}"
 echo -e "${green}${divider}${NC}"

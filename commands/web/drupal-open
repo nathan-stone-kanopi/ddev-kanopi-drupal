@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 ## Description: Open the site or admin in your default browser
-## Usage: open [service]
-## Example: ddev open      # Opens the site
-##          ddev open cms  # Opens Drupal admin
+## Usage: drupal-open [service]
+## Example: ddev drupal-open      # Opens the site
+##          ddev drupal-open cms  # Opens Drupal admin
+## Aliases: drupal:open,open,drupal-open
 
 SERVICE="${1:-}"
 

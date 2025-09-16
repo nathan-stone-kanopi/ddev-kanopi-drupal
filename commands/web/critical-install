@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ## Description: Initialize/reinstall tools needed for critical CSS.
-## Usage: critical:install
-## Example: ddev critical:install
-## Aliases: install-critical-tools,cri,critical-install
+## Usage: critical-install
+## Example: ddev critical-install
+## Aliases: critical:install,install-critical-tools,cri,critical-install
 
 #-------------------------- Helper functions -----------------------------------
 
@@ -24,7 +24,7 @@ lightning='\xE2\x9A\xA1'
 drop='\xF0\x9F\x92\xA7'
 shark='\xF0\x9F\xA6\x88'
 gear='\xEF\xB8\x8F'
-critical_command='ddev critical:run'
+critical_command='ddev critical-run'
 
 #-------------------------- Settings -------------------------------------------
 

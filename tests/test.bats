@@ -31,14 +31,14 @@ health_checks() {
     docker ps | grep "ddev-${PROJNAME}-pma" || echo "PhpMyAdmin service should be running"
 
     # Check custom commands exist (may be skipped if conflicts with existing DDEV commands)
-    ddev theme:install --help || echo "theme:install command exists or skipped due to conflicts"
-    ddev theme:watch --help || echo "theme:watch command exists or skipped due to conflicts"
-    ddev theme:build --help || echo "theme:build command exists or skipped due to conflicts"
-    ddev db:refresh --help || echo "db:refresh command exists or skipped due to conflicts"
-    ddev recipe:apply --help || echo "recipe:apply command exists or skipped due to conflicts"
-    ddev recipe:uuid-rm --help || echo "recipe:uuid-rm command exists or skipped due to conflicts"
-    ddev theme:npm --help || echo "theme:npm command exists or skipped due to conflicts"
-    ddev pantheon:terminus --help || echo "pantheon:terminus command exists or skipped due to conflicts"
+    ddev theme-install --help || echo "theme-install command exists or skipped due to conflicts"
+    ddev theme-watch --help || echo "theme-watch command exists or skipped due to conflicts"
+    ddev theme-build --help || echo "theme-build command exists or skipped due to conflicts"
+    ddev db-refresh --help || echo "db-refresh command exists or skipped due to conflicts"
+    ddev recipe-apply --help || echo "recipe-apply command exists or skipped due to conflicts"
+    ddev recipe-uuid-rm --help || echo "recipe-uuid-rm command exists or skipped due to conflicts"
+    ddev theme-npm --help || echo "theme-npm command exists or skipped due to conflicts"
+    ddev pantheon-terminus --help || echo "pantheon-terminus command exists or skipped due to conflicts"
 
     # Check configuration files exist
     [ -f ".ddev/config/php/php.ini" ]
@@ -103,8 +103,8 @@ health_checks() {
     ddev start
 
     # Check that recipe commands exist and have proper structure
-    ddev recipe:apply --help || echo "recipe:apply command should exist"
-    ddev recipe:uuid-rm --help || echo "recipe:uuid-rm command should exist"
+    ddev recipe-apply --help || echo "recipe-apply command should exist"
+    ddev recipe-uuid-rm --help || echo "recipe-uuid-rm command should exist"
 }
 
 @test "docker services" {
@@ -141,6 +141,6 @@ health_checks() {
     [ -x ".ddev/scripts/pantheon-refresh.sh" ]
     [ -x ".ddev/scripts/acquia-refresh.sh" ]
 
-    # Verify db:refresh command can find the scripts
-    ddev db:refresh --help || echo "db:refresh should be available"
+    # Verify db-refresh command can find the scripts
+    ddev db-refresh --help || echo "db-refresh should be available"
 }

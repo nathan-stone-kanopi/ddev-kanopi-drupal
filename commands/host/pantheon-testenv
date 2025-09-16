@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Initialize stack and testing environment in DDEV.
-## Usage: pantheon:testenv [environment_name] [optional profile_or_recipe]
-## Example: ddev pantheon:testenv my-env minimal
-## Aliases: testenv,pantheon-testenv
+## Usage: pantheon-testenv [environment_name] [optional profile_or_recipe]
+## Example: ddev pantheon-testenv my-env minimal
+## Aliases: pantheon:testenv,testenv,pantheon-testenv
 ## OSTypes: darwin
 
 # Abort if anything fails
@@ -27,7 +27,7 @@ key='\xF0\x9F\x94\x91'
 
 # Check if at least one argument is provided.
 if [ -z "$1" ]; then
-    echo -e "\n ❌  Usage: ddev pantheon:testenv <environment_name> [optional profile_or_recipe]"
+    echo -e "\n ❌  Usage: ddev pantheon-testenv <environment_name> [optional profile_or_recipe]"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ cd ${DDEV_APPROOT}
 echo -e "\n${construction} ${yellow} Initializing Cypress.${NC} ${construction}\n"
 echo -e "This should require no input."
 echo -e "${green}${divider}${NC}"
-ddev cypress:install
+ddev cypress-install
 
 # Site initialization.
 echo -e "\n${construction} ${yellow} Composer install...${NC} ${construction}\n"

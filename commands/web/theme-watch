@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 ## Description: Start theme development with file watching
-## Usage: theme:watch
-## Example: "ddev theme:watch"
-## Aliases: development,thw,theme-watch,theme-development
+## Usage: theme-watch
+## Example: "ddev theme-watch"
+## Aliases: theme:watch,development,thw,theme-watch,theme-development
 
 # Abort if anything fails
 set -e
@@ -37,7 +37,7 @@ fi
 if [ ! -f "$FULL_THEME_PATH/package.json" ]; then
     echo -e "\n${yellow}package.json not found in theme directory: $FULL_THEME_PATH${NC}"
     echo -e "Please ensure your theme has a package.json file with npm scripts configured"
-    echo -e "Run ${yellow}ddev theme:install${NC} to set up theme development tools first"
+    echo -e "Run ${yellow}ddev theme-install${NC} to set up theme development tools first"
     exit 1
 fi
 

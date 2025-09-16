@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ## Description: Interactive reconfiguration wizard for Kanopi Drupal DDEV
-## Usage: project:configure
-## Example: "ddev project:configure"
-## Aliases: configure,project-configure,prc
+## Usage: project-configure
+## Example: "ddev project-configure"
+## Aliases: project:configure,configure,project-configure,prc
 
 #ddev-generated
 
@@ -194,9 +194,9 @@ echo "2. 🗄️ Refresh your database from $HOST_PROVIDER:"
 echo "   ddev refresh"
 echo ""
 echo "3. 🎨 Install theme development tools (if needed):"
-echo "   ddev theme:install"
+echo "   ddev theme-install"
 echo ""
 echo "4. 🌐 Start developing:"
-echo "   ddev theme:watch"
+echo "   ddev theme-watch"
 echo ""
 echo -e "${green}${divider}${NC}"

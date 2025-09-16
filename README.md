@@ -133,33 +133,33 @@ ddev add-on get kanopi/ddev-kanopi-drupal
 This add-on provides 17 custom commands:
 | Command | Type | Description | Example | Aliases |
 |---------|------|-------------|---------|---------|
-| `ddev critical:install` | Web | Install Critical CSS generation tools | `ddev critical:install` | install-critical-tools, cri, critical-install |
-| `ddev critical:run` | Web | Run Critical CSS generation | `ddev critical:run` | critical, crr, critical-run |
-| `ddev cypress:install` | Host | Install Cypress E2E testing dependencies | `ddev cypress:install` | cyi, cypress-install, install-cypress |
-| `ddev cypress:run <command>` | Host | Run Cypress commands with environment support | `ddev cypress:run open` | cy, cypress, cypress-run, cyr |
-| `ddev cypress:users` | Host | Create default admin user for Cypress testing | `ddev cypress:users` | cyu, cypress-users |
-| `ddev init` | Host | Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh | `ddev init` | - |
-| `ddev db:prep-migrate` | Web | Create secondary database for migrations | `ddev db:prep-migrate` | migrate-prep-db, db-prep-migrate, db-mpdb |
-| `ddev theme:npm <command>` | Web | Run NPM commands in theme directory specified by THEME env var | `ddev theme:npm run build` | npm, theme-npm |
-| `ddev theme:npx <command>` | Web | Run NPX commands in theme directory | `ddev theme:npx webpack --watch` | npx, theme-npx |
-| `ddev open [service]` | Web | Open the site or admin in your default browser | `ddev open` or `ddev open cms` | - |
-| `ddev pantheon:testenv <name> [profile]` | Host | Create isolated testing environment with optional install profile | `ddev pantheon:testenv my-test minimal` | testenv, pantheon-testenv |
-| `ddev pantheon:terminus <command>` | Host | Run Terminus commands for Pantheon integration | `ddev pantheon:terminus site:list` | terminus, pantheon-terminus |
-| `ddev pantheon:tickle` | Web | Keep Pantheon environment awake during long operations | `ddev pantheon:tickle` | tickle, pantheon-tickle |
+| `ddev critical-install` | Web | Install Critical CSS generation tools | `ddev critical-install` | critical:install, install-critical-tools, cri |
+| `ddev critical-run` | Web | Run Critical CSS generation | `ddev critical-run` | critical:run, critical, crr |
+| `ddev cypress-install` | Host | Install Cypress E2E testing dependencies | `ddev cypress-install` | cypress:install, cyi, install-cypress |
+| `ddev cypress-run <command>` | Host | Run Cypress commands with environment support | `ddev cypress-run open` | cypress:run, cy, cypress, cyr |
+| `ddev cypress-users` | Host | Create default admin user for Cypress testing | `ddev cypress-users` | cypress:users, cyu |
+| `ddev project-init` | Host | Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh | `ddev project-init` | project:init, init |
+| `ddev db-prep-migrate` | Web | Create secondary database for migrations | `ddev db-prep-migrate` | db:prep-migrate, migrate-prep-db, db-mpdb |
+| `ddev theme-npm <command>` | Web | Run NPM commands in theme directory specified by THEME env var | `ddev theme-npm run build` | theme:npm, theme-npm |
+| `ddev theme-npx <command>` | Web | Run NPX commands in theme directory | `ddev theme-npx webpack --watch` | theme:npx, npx |
+| `ddev drupal-open [service]` | Web | Open the site or admin in your default browser | `ddev drupal-open` or `ddev drupal-open cms` | drupal:open, open |
+| `ddev pantheon-testenv <name> [profile]` | Host | Create isolated testing environment with optional install profile | `ddev pantheon-testenv my-test minimal` | pantheon:testenv, testenv |
+| `ddev pantheon-terminus <command>` | Host | Run Terminus commands for Pantheon integration | `ddev pantheon-terminus site:list` | pantheon:terminus, terminus |
+| `ddev pantheon-tickle` | Web | Keep Pantheon environment awake during long operations | `ddev pantheon-tickle` | pantheon:tickle, tickle |
 | `ddev phpmyadmin` | Host | Launch PhpMyAdmin database interface | `ddev phpmyadmin` | - |
-| `ddev project:configure` | Host | Interactive reconfiguration wizard | `ddev project:configure` | configure, project-configure, prc |
-| `ddev db:rebuild` | Host | Run composer install followed by database refresh | `ddev db:rebuild` | rebuild, db-rebuild, dbreb |
-| `ddev recipe:apply <path>` | Web | Apply Drupal recipe with automatic cache clearing | `ddev recipe:apply ../recipes/my-recipe` | recipe, recipe-apply, ra |
-| `ddev recipe:unpack [recipe]` | Web | Unpack a recipe package or all recipes | `ddev recipe:unpack drupal/example_recipe` | recipe-unpack, ru |
-| `ddev recipe:uuid-rm <path>` | Web | Remove UUIDs from config files for recipe development | `ddev recipe:uuid-rm config/sync` | uuid-rm, recipe-uuid-rm |
-| `ddev db:refresh [env] [-f]` | Web | Smart database refresh from Pantheon with 12-hour backup age detection | `ddev db:refresh live -f` | refresh, db-refresh, dbref |
-| `ddev theme:build` | Web | Build production assets for the theme | `ddev theme:build` | production, theme-build, thb, theme-production |
-| `ddev theme:install` | Web | Set up Node.js, NPM, and build tools using .nvmrc | `ddev theme:install` | install-theme-tools, thi, theme-install |
-| `ddev theme:watch` | Web | Start theme development with file watching | `ddev theme:watch` | development, thw, theme-watch, theme-development |
+| `ddev project-configure` | Host | Interactive reconfiguration wizard | `ddev project-configure` | project:configure, configure, prc |
+| `ddev db-rebuild` | Host | Run composer install followed by database refresh | `ddev db-rebuild` | db:rebuild, rebuild, dbreb |
+| `ddev recipe-apply <path>` | Web | Apply Drupal recipe with automatic cache clearing | `ddev recipe-apply ../recipes/my-recipe` | recipe:apply, recipe, ra |
+| `ddev recipe-unpack [recipe]` | Web | Unpack a recipe package or all recipes | `ddev recipe-unpack drupal/example_recipe` | recipe:unpack, ru |
+| `ddev recipe-uuid-rm <path>` | Web | Remove UUIDs from config files for recipe development | `ddev recipe-uuid-rm config/sync` | recipe:uuid-rm, uuid-rm |
+| `ddev db-refresh [env] [-f]` | Web | Smart database refresh from Pantheon with 12-hour backup age detection | `ddev db-refresh live -f` | db:refresh, refresh, dbref |
+| `ddev theme-build` | Web | Build production assets for the theme | `ddev theme-build` | theme:build, production, thb, theme-production |
+| `ddev theme-install` | Web | Set up Node.js, NPM, and build tools using .nvmrc | `ddev theme-install` | theme:install, install-theme-tools, thi |
+| `ddev theme-watch` | Web | Start theme development with file watching | `ddev theme-watch` | theme:watch, development, thw, theme-development |
 
 ## Smart Database Refresh
 
-The enhanced `ddev refresh` command includes intelligent backup management:
+The enhanced `ddev db-refresh` command includes intelligent backup management:
 
 - **Automatic Backup Age Detection**: Checks if backups are older than 12 hours
 - **Force Flag Support**: Use `-f` to create new backup regardless of age
@@ -168,30 +168,30 @@ The enhanced `ddev refresh` command includes intelligent backup management:
 
 ```bash
 # Refresh from dev (default)
-ddev refresh
+ddev db-refresh
 
-# Refresh from live environment  
-ddev refresh live
+# Refresh from live environment
+ddev db-refresh live
 
 # Force new backup creation
-ddev refresh -f
+ddev db-refresh -f
 
 # Refresh from multidev environment
-ddev refresh pr-123
+ddev db-refresh pr-123
 ```
 
 ## Theme Development Workflow
 
-1. **Setup**: `ddev theme:install`
-2. **Development**: `ddev theme:watch`
-3. **Build**: `ddev theme:build`
-4. **Critical CSS**: `ddev critical:install` then `ddev critical:run`
+1. **Setup**: `ddev theme-install`
+2. **Development**: `ddev theme-watch`
+3. **Build**: `ddev theme-build`
+4. **Critical CSS**: `ddev critical-install` then `ddev critical-run`
 
 ## Recipe Development Workflow
 
-1. **Apply Recipe**: `ddev recipe:apply ../recipes/my-recipe`
-2. **Unpack Recipe**: `ddev recipe:unpack drupal/example_recipe`
-2. **Clean Config**: `ddev uuid-rm config/sync`
+1. **Apply Recipe**: `ddev recipe-apply ../recipes/my-recipe`
+2. **Unpack Recipe**: `ddev recipe-unpack drupal/example_recipe`
+2. **Clean Config**: `ddev recipe-uuid-rm config/sync`
 3. **Export Config**: `ddev drush config:export`
 
 ## Search Integration
@@ -424,10 +424,10 @@ Compare the provided `theme:install` command with your project's current build p
 
 ```bash
 # Review the command
-ddev help theme:install
+ddev help theme-install
 
 # Test the command in your theme directory
-ddev theme:install
+ddev theme-install
 ```
 
 The command expects:
@@ -437,7 +437,7 @@ The command expects:
 
 If your theme build process differs, you may need to:
 - Update your theme's `package.json` scripts
-- Modify the `commands/web/theme:install` file to match your workflow
+- Modify the `commands/web/theme-install` file to match your workflow
 - Create a `.nvmrc` file with your preferred Node.js version
 
 #### 5. Convert Existing Custom Commands
@@ -483,7 +483,7 @@ This project supports both DDEV and Docksal for local development.
 4. **Initialize Project**:
    ```bash
    ddev start
-   ddev init
+   ddev project-init
    ```
 
 ### Available DDEV Commands
@@ -498,7 +498,7 @@ After configuration, initialize your project:
 ```bash
 # Start DDEV and run initialization
 ddev start
-ddev init
+ddev project-init
 
 # This will:
 # - Install Lefthook git hooks
@@ -510,9 +510,9 @@ ddev init
 
 ### Verification Steps
 
-1. **Test database refresh**: `ddev refresh`
-2. **Test theme tools**: `ddev theme:install`
-3. **Verify Pantheon connection**: `ddev pantheon:terminus site:list`
+1. **Test database refresh**: `ddev db-refresh`
+2. **Test theme tools**: `ddev theme-install`
+3. **Verify Pantheon connection**: `ddev pantheon-terminus site:list`
 4. **Test proxy setup**: Visit your local site and check if assets load from Pantheon
 
 ## Quick Reference
@@ -520,22 +520,22 @@ ddev init
 ### Common Workflow
 ```bash
 # Daily development workflow
-ddev init
+ddev project-init
 
 # or individually
 ddev start                    # Start DDEV
-ddev refresh                  # Get latest database
-ddev theme:install           # Set up theme tools (first time)
-ddev theme:watch             # Start theme development
+ddev db-refresh               # Get latest database
+ddev theme-install            # Set up theme tools (first time)
+ddev theme-watch              # Start theme development
 
 # Testing workflow
-ddev cypress:install         # Set up Cypress (first time)
-ddev cypress:users          # Create test users
-ddev cypress:run open       # Open Cypress
+ddev cypress-install          # Set up Cypress (first time)
+ddev cypress-users            # Create test users
+ddev cypress-run open         # Open Cypress
 
 # Deployment preparation
-ddev theme:build             # Build theme assets
-ddev drush cache:rebuild    # Clear Drupal caches
+ddev theme-build              # Build theme assets
+ddev drush cache:rebuild      # Clear Drupal caches
 ```
 
 ### Key Environment Variables
@@ -563,7 +563,7 @@ ddev drush cache:rebuild    # Clear Drupal caches
 ddev exec printenv TERMINUS_MACHINE_TOKEN
 
 # Re-authenticate manually
-ddev pantheon:terminus auth:login --machine-token="your_token"
+ddev pantheon-terminus auth:login --machine-token="your_token"
 ```
 
 ### Acquia Authentication Issues
@@ -585,7 +585,7 @@ ddev exec acli api:applications:find
 ddev exec node --version
 
 # Reinstall dependencies
-ddev theme:install
+ddev theme-install
 ```
 
 ### Database Refresh Issues
@@ -593,10 +593,10 @@ ddev theme:install
 **For Pantheon:**
 ```bash
 # Check Pantheon connection
-ddev pantheon:terminus site:list
+ddev pantheon-terminus site:list
 
 # Force new backup
-ddev refresh -f
+ddev db-refresh -f
 ```
 
 **For Acquia:**
@@ -608,7 +608,7 @@ ddev exec acli api:applications:find
 ddev exec acli api:environments:find HOSTING_SITE
 
 # Force new backup
-ddev refresh -f
+ddev db-refresh -f
 ```
 
 ## Platform-Specific Configurations
