@@ -245,7 +245,7 @@ printf "${BLUE}ℹ️  Solr configuration provided as manual copy-paste instruct
 
 # Step 5: Test command availability
 printf "\n${YELLOW}🔧 Testing available commands...${NC}\n"
-if ddev help | grep -q "db:refresh"; then
+if ddev help | grep -q "db-refresh"; then
     printf "${GREEN}✅ Custom commands are available${NC}\n"
 else
     printf "${RED}❌ Custom commands not found${NC}\n"
