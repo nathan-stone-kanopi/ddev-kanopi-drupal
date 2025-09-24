@@ -241,6 +241,40 @@ pre_install_actions:
     ddev config --web-environment-add HOSTING_ENV=${HOSTING_ENV}
     echo "HOSTING_ENV set to ${HOSTING_ENV}"
   fi
+  
+
+- |
+  #ddev-nodisplay
+  #ddev-description:Set APACHE_FILE_PROXY, only for Acquia
+  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
+    printf "Skipping, only needed for Acquia"
+  elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
+    if ({{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+      echo "Using existing APACHE_FILE_PROXY from project config.yaml."
+    else
+      printf "🎨 Enter your proxy URL('https://kanopi.com/'): "
+    fi
+  fi
+
+- |
+  #ddev-nodisplay
+  if !( {{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    # Check if running in CI environment
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      APACHE_FILE_PROXY="https://kanopi.com"
+      echo "CI environment detected, using default environment: $HOSTING_ENV"
+    else
+      read APACHE_FILE_PROXY
+      if [ -z "APACHE_FILE_PROXY" ]; then
+        APACHE_FILE_PROXY="https://kanopi.com"
+        echo "⚠️  Using default environment: $HOSTING_ENV"
+      fi
+    fi
+    echo "APACHE_FILE_PROXY = '${APACHE_FILE_PROXY}'"
+    ddev config --web-environment-add APACHE_FILE_PROXY=${APACHE_FILE_PROXY}
+    echo "APACHE_FILE_PROXY set to ${APACHE_FILE_PROXY}"
+  fi
 
 # Optional Migration Configuration intro
 - |
@@ -350,9 +384,36 @@ post_install_actions:
       echo "⚠️  Could not retrieve HOSTING_SITE and HOSTING_ENV values for nginx configuration"
     fi
   elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-    echo "🔧 Acquia uses Apache-FPM, skipping nginx proxy configuration"
-    echo "✅ No additional proxy configuration needed for Acquia"
+    echo "🔧 Acquia uses Apache-FPM, skipping nginx proxy configuration"    
     rm -rf nginx_full
+    # Add file proxy configuration to .htaccess for Acquia
+    HTACCESS_PATH="../docroot/.htaccess"
+    if [ -f "$HTACCESS_PATH" ]; then
+      # Check if the file proxy rules already exist
+      if ! grep -q "ENV:APACHE_FILE_PROXY" "$HTACCESS_PATH"; then
+        # Create temporary file with new rules at the top
+        TEMP_FILE=$(mktemp)
+        echo "# File proxy DDEV for Acquia" > "$TEMP_FILE"
+        echo "<IfModule mod_rewrite.c>" >> "$TEMP_FILE"
+        echo "RewriteEngine on" >> "$TEMP_FILE"
+        echo "RewriteCond %{ENV:APACHE_FILE_PROXY} !^\$" >> "$TEMP_FILE"
+        echo "RewriteCond %{REQUEST_URI} ^/sites/default/files/" >> "$TEMP_FILE"
+        echo "RewriteCond %{REQUEST_FILENAME} !-f" >> "$TEMP_FILE"
+        echo "RewriteCond %{REQUEST_FILENAME} !-d" >> "$TEMP_FILE"
+        echo "RewriteRule ^(.*)\$ %{ENV:APACHE_FILE_PROXY}/\$1 [R=302,L]" >> "$TEMP_FILE"
+        echo "</IfModule>" >> "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        # Append existing .htaccess content
+        cat "$HTACCESS_PATH" >> "$TEMP_FILE"
+        # Replace original with new content
+        mv "$TEMP_FILE" "$HTACCESS_PATH"
+        echo "✅ Added file proxy configuration to top of .htaccess"
+      else
+        echo "✅ File proxy configuration already exists in .htaccess"
+      fi
+    else
+      echo "⚠️  .htaccess file not found at $HTACCESS_PATH"
+    fi
   fi
 
 - |
