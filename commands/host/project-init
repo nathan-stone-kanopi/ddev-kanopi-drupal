@@ -86,7 +86,13 @@ ddev composer install
 # Prime the theming tools
 ddev install-theme-tools
 
-# Get the database.
+# Prime Acqui CLI
+HOSTING_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER)
+if [ "$HOSTING_PROVIDER" = "acquia" ]; then
+  ddev exec 'acli hello-world -n'
+fi
+
+# Get the DB
 ddev db-refresh
 
 # Complete.
