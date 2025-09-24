@@ -46,8 +46,8 @@ health_checks() {
 
     # Check that scripts folder was copied
     [ -d ".ddev/scripts" ]
-    [ -f ".ddev/scripts/pantheon-refresh.sh" ]
-    [ -f ".ddev/scripts/acquia-refresh.sh" ]
+    [ -f ".ddev/scripts/refresh-pantheon.sh" ]
+    [ -f ".ddev/scripts/refresh-acquia.sh" ]
 
     # Check gitignore was updated for add-on settings
     grep -q "settings.ddev.redis.php\|settings.ddev.memcached.php" .gitignore || echo "gitignore should contain add-on settings files"
@@ -134,12 +134,12 @@ health_checks() {
 
     # Check that scripts folder was copied
     [ -d ".ddev/scripts" ]
-    [ -f ".ddev/scripts/pantheon-refresh.sh" ]
-    [ -f ".ddev/scripts/acquia-refresh.sh" ]
+    [ -f ".ddev/scripts/refresh-pantheon.sh" ]
+    [ -f ".ddev/scripts/refresh-acquia.sh" ]
 
     # Check scripts are executable
-    [ -x ".ddev/scripts/pantheon-refresh.sh" ]
-    [ -x ".ddev/scripts/acquia-refresh.sh" ]
+    [ -x ".ddev/scripts/refresh-pantheon.sh" ]
+    [ -x ".ddev/scripts/refresh-acquia.sh" ]
 
     # Verify db-refresh command can find the scripts
     ddev db-refresh --help || echo "db-refresh should be available"
