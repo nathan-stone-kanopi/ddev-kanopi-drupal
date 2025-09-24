@@ -259,21 +259,24 @@ pre_install_actions:
 
 - |
   #ddev-nodisplay
-  if !( {{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      APACHE_FILE_PROXY="https://kanopi.com"
-      echo "CI environment detected, using default environment: $HOSTING_ENV"
-    else
-      read APACHE_FILE_PROXY
-      if [ -z "APACHE_FILE_PROXY" ]; then
+  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  if [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
+    if !( {{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
+      # Check if running in CI environment
+      if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
         APACHE_FILE_PROXY="https://kanopi.com"
-        echo "⚠️  Using default environment: $HOSTING_ENV"
+        echo "CI environment detected, using default environment: $HOSTING_ENV"
+      else
+        read APACHE_FILE_PROXY
+        if [ -z "APACHE_FILE_PROXY" ]; then
+          APACHE_FILE_PROXY="https://kanopi.com"
+          echo "⚠️  Using default environment: $HOSTING_ENV"
+        fi
       fi
+      echo "APACHE_FILE_PROXY = '${APACHE_FILE_PROXY}'"
+      ddev config --web-environment-add APACHE_FILE_PROXY=${APACHE_FILE_PROXY}
+      echo "APACHE_FILE_PROXY set to ${APACHE_FILE_PROXY}"
     fi
-    echo "APACHE_FILE_PROXY = '${APACHE_FILE_PROXY}'"
-    ddev config --web-environment-add APACHE_FILE_PROXY=${APACHE_FILE_PROXY}
-    echo "APACHE_FILE_PROXY set to ${APACHE_FILE_PROXY}"
   fi
 
 # Optional Migration Configuration intro
