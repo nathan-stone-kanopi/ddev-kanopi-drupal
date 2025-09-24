@@ -25,7 +25,7 @@ lightning='\xE2\x9A\xA1'
 drop='\xF0\x9F\x92\xA7'
 shark='\xF0\x9F\xA6\x88'
 gear='\xEF\xB8\x8F'
-theme_tools_command='ddev theme-install'
+theme_tools_command='ddev npm run build'
 critical_tools_command='ddev critical-install'
 key='\xF0\x9F\x94\x91'
 lock='\xF0\x9F\x94\x92'
@@ -83,12 +83,8 @@ echo -e "This should require no input."
 echo -e "${green}${divider}${NC}"
 ddev composer install
 
-# Here's where you could run the theme build.
-# Commenting it out so build finishes faster.
-# Added a comment so themers can run manually.
-# fin install-theme-tools
-# fin install-critical-tools
-# fin solr-create-core
+# Prime the theming tools
+ddev install-theme-tools
 
 # Get the database.
 ddev db-refresh
