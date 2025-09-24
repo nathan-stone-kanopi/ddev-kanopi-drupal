@@ -253,7 +253,7 @@ pre_install_actions:
     if ({{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
       echo "Using existing APACHE_FILE_PROXY from project config.yaml."
     else
-      printf "🎨 Enter your proxy URL('https://kanopi.com/'): "
+      printf "🎨 Enter your proxy URL('https://kanopi.com'): "
     fi
   fi
 
