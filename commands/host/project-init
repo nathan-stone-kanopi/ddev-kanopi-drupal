@@ -89,7 +89,8 @@ ddev install-theme-tools
 # Prime Acqui CLI
 HOSTING_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER)
 if [ "$HOSTING_PROVIDER" = "acquia" ]; then
-  ddev exec 'acli hello-world -n'
+  # Ensure telemetry is disabled.
+  ddev exec 'echo "no" | acli hello-world'
 fi
 
 # Get the DB
