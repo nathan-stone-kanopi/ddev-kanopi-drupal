@@ -97,5 +97,4 @@ ddev db-refresh
 echo -e "\n${party} ${yellow} Build complete!!!${NC} ${reverseparty}"
 echo -e "Visit ${yellow}${DDEV_PRIMARY_URL}${NC} in a web browser."
 echo -e "Run ${yellow}${theme_tools_command}${NC} to work on the theme."
-echo -e "Run ${yellow}${critical_tools_command}${NC} to install tools for Critical CSS."
 echo -e "${green}${divider}${NC}"
