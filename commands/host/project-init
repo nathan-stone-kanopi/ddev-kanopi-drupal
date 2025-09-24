@@ -93,20 +93,6 @@ ddev composer install
 # Get the database.
 ddev db-refresh
 
-# Logging into to Drupal.
-echo -e "\n${lock} ${yellow} Logging you in.${NC} ${lock}"
-echo -e "This should take ~1 minute and require no input."
-echo -e "${green}${divider}${NC}"
-
-cd ${DDEV_APPROOT}
-
-if [ -f "config/core.extension.yml" ]; then
-  ddev drush uli --uid=2
-else
-  echo -e "\n${yellow}Don't forget to block user 1!${NC}"
-  ddev drush uli
-fi
-
 # Complete.
 echo -e "\n${party} ${yellow} Build complete!!!${NC} ${reverseparty}"
 echo -e "Visit ${yellow}${DDEV_PRIMARY_URL}${NC} in a web browser."

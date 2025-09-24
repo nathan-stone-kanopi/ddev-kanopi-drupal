@@ -59,7 +59,7 @@ pre_install_actions:
       echo "✅ Configured docroot for Pantheon (web)"
     elif [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
       # Acquia uses 'docroot' as docroot and apache-fpm webserver
-      ddev config --docroot=docroot --webserver-type=apache-fpm
+      ddev config --docroot=docroot --webserver-type=apache-fpm --webserver-type=apache-fpm 
       echo "✅ Configured docroot for Acquia (docroot)"
       echo "✅ Configured webserver for Acquia (apache-fpm)"
     fi
