@@ -4,7 +4,7 @@
 ## Usage: pantheon-testenv [environment_name] [optional profile_or_recipe]
 ## Example: ddev pantheon-testenv my-env minimal
 ## Aliases: pantheon:testenv,testenv
-## OSTypes: darwin
+
 
 # Abort if anything fails
 set -e

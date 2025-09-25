@@ -4,7 +4,7 @@
 ## Usage: project-init
 ## Example: "ddev project-init"
 ## Aliases: project:init,init
-## OSTypes: darwin
+
 
 #-------------------------- Helper functions ------------------------------
 
@@ -25,7 +25,7 @@ lightning='\xE2\x9A\xA1'
 drop='\xF0\x9F\x92\xA7'
 shark='\xF0\x9F\xA6\x88'
 gear='\xEF\xB8\x8F'
-theme_tools_command='ddev theme-install'
+theme_tools_command='ddev npm run build'
 critical_tools_command='ddev critical-install'
 key='\xF0\x9F\x94\x91'
 lock='\xF0\x9F\x94\x92'
@@ -83,33 +83,21 @@ echo -e "This should require no input."
 echo -e "${green}${divider}${NC}"
 ddev composer install
 
-# Here's where you could run the theme build.
-# Commenting it out so build finishes faster.
-# Added a comment so themers can run manually.
-# fin install-theme-tools
-# fin install-critical-tools
-# fin solr-create-core
+# Prime the theming tools
+ddev install-theme-tools
 
-# Get the database.
-ddev db-refresh
-
-# Logging into to Drupal.
-echo -e "\n${lock} ${yellow} Logging you in.${NC} ${lock}"
-echo -e "This should take ~1 minute and require no input."
-echo -e "${green}${divider}${NC}"
-
-cd ${DDEV_APPROOT}
-
-if [ -f "config/core.extension.yml" ]; then
-  ddev drush uli --uid=2
-else
-  echo -e "\n${yellow}Don't forget to block user 1!${NC}"
-  ddev drush uli
+# Prime Acqui CLI
+HOSTING_PROVIDER=$(ddev exec printenv HOSTING_PROVIDER)
+if [ "$HOSTING_PROVIDER" = "acquia" ]; then
+  # Ensure telemetry is disabled.
+  ddev exec 'echo "no" | acli hello-world'
 fi
+
+# Get the DB
+ddev db-refresh
 
 # Complete.
 echo -e "\n${party} ${yellow} Build complete!!!${NC} ${reverseparty}"
 echo -e "Visit ${yellow}${DDEV_PRIMARY_URL}${NC} in a web browser."
 echo -e "Run ${yellow}${theme_tools_command}${NC} to work on the theme."
-echo -e "Run ${yellow}${critical_tools_command}${NC} to install tools for Critical CSS."
 echo -e "${green}${divider}${NC}"

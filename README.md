@@ -71,8 +71,8 @@ Navigate to your existing project directory and configure DDEV:
 ```bash
 cd /path/to/your-drupal-project
 
-# Initialize DDEV configuration. Match your existing PHP/DB versions set in pantheon.yml
-ddev config --project-type=drupal --docroot=web --php-version=8.3 --database=mariadb:10.6
+# Initialize DDEV configuration. Match your existing PHP
+ddev config --project-type=drupal --php-version=8.3 
 
 # Run add-on
 ddev add-on get kanopi/ddev-kanopi-drupal

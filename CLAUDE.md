@@ -86,7 +86,6 @@ The `ddev db-refresh` command includes intelligent backup management:
 ## Description: Brief description of what the command does
 ## Usage: command-name [arguments]
 ## Example: "ddev command-name arg1 arg2"
-## OSTypes: darwin,linux,windows
 
 set -e
 # Command logic here
