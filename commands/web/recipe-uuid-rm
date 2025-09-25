@@ -5,6 +5,8 @@
 ## Example: ddev recipe-uuid-rm config/sync
 ## Aliases: recipe:uuid-rm,uuid-rm
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

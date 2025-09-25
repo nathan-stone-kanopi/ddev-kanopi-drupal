@@ -5,6 +5,7 @@
 ## Example: "ddev project-init"
 ## Aliases: project:init,init
 
+#ddev-generated
 
 #-------------------------- Helper functions ------------------------------
 

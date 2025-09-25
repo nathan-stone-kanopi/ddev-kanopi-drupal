@@ -5,6 +5,8 @@
 ## Example: "ddev theme-watch"
 ## Aliases: theme:watch,development,thw,theme-development
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

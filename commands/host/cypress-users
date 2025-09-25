@@ -5,6 +5,7 @@
 ## Example: "ddev cypress-users"
 ## Aliases: cypress:users,cyu
 
+#ddev-generated
 
 # Abort if anything fails
 set -e

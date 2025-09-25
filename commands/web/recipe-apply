@@ -6,6 +6,8 @@
 ## Example: ddev recipe-apply core/recipes/standard
 ## Aliases: recipe:apply,recipe,ra
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

@@ -6,6 +6,8 @@
 ## Example: ddev recipe-unpack (unpacks all recipes)
 ## Aliases: recipe:unpack,ru
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

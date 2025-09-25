@@ -1,5 +1,7 @@
 # Testing the DDEV Kanopi Drupal Add-on
 
+#ddev-generated
+
 This directory contains bats tests for standardized testing of the DDEV Kanopi Drupal Add-on. The project uses the official DDEV add-on testing framework combined with comprehensive integration testing.
 
 ## Test Files

@@ -8,6 +8,8 @@
 # Abort if anything fails
 set -e
 
+#ddev-generated
+
 #-------------------------- Helper functions --------------------------------
 
 green='\033[0;32m'

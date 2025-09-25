@@ -5,6 +5,8 @@
 ## Example: ddev critical-install
 ## Aliases: critical:install,install-critical-tools,cri
 
+#ddev-generated
+
 #-------------------------- Helper functions -----------------------------------
 
 green='\033[0;32m'

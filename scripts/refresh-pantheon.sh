@@ -3,6 +3,8 @@
 ## Pantheon database refresh script
 ## Called from the main refresh command when HOSTING_PROVIDER=pantheon
 
+#ddev-generated
+
 green='\033[0;32m'
 yellow='\033[1;33m'
 red='\033[0;31m'

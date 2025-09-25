@@ -5,6 +5,7 @@
 ## Example: "ddev db-rebuild"
 ## Aliases: db:rebuild,rebuild,dbreb
 
+#ddev-generated
 
 green='\033[0;32m'
 yellow='\033[1;33m'

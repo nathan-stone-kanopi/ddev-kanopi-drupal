@@ -5,6 +5,8 @@
 ## Example: "ddev theme-build"
 ## Aliases: theme:build,production,thb,theme-production
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

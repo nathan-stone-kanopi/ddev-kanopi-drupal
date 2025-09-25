@@ -5,6 +5,8 @@
 ## Example: ddev theme-npx webpack --watch
 ## Aliases: theme:npx,npx
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

@@ -2,6 +2,8 @@
 
 # Test suite for ddev-kanopi-drupal add-on
 
+#ddev-generated
+
 setup() {
     export PROJNAME=test-kanopi-drupal
     export TESTDIR=~/tmp/$PROJNAME

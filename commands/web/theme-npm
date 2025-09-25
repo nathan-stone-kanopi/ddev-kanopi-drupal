@@ -6,6 +6,8 @@
 ##          ddev theme-npm run build
 ## Aliases: theme:npm
 
+#ddev-generated
+
 # Abort if anything fails
 set -e
 

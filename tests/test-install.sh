@@ -3,6 +3,8 @@
 ## Test Installation Script for DDEV Kanopi Drupal Add-on
 ## This script creates a test DDEV project and validates the interactive installation process for multi-platform support
 
+#ddev-generated
+
 set -e
 
 # Enable built-in echo to support -e flag

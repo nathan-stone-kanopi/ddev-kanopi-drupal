@@ -3,6 +3,8 @@
 ## Acquia Database Refresh Script
 ## Called by the main refresh command for Acquia platforms
 
+#ddev-generated
+
 green='\033[0;32m'
 yellow='\033[1;33m'
 red='\033[0;31m'

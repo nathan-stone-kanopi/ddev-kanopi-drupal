@@ -6,6 +6,8 @@
 ##          ddev drupal-open cms  # Opens Drupal admin
 ## Aliases: drupal:open,open
 
+#ddev-generated
+
 SERVICE="${1:-}"
 
 if [ "$SERVICE" = "cms" ] || [ "$SERVICE" = "admin" ]; then

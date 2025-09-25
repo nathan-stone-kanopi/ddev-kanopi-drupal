@@ -7,6 +7,8 @@
 ## Aliases: db:refresh,refresh
 ## Flags: [{"Name":"force","Shorthand":"f","Usage":"Force creation of new backup regardless of age"}]
 
+#ddev-generated
+
 green='\033[0;32m'
 yellow='\033[1;33m'
 red='\033[0;31m'

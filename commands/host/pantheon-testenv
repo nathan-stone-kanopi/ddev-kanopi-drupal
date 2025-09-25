@@ -5,6 +5,7 @@
 ## Example: ddev pantheon-testenv my-env minimal
 ## Aliases: pantheon:testenv,testenv
 
+#ddev-generated
 
 # Abort if anything fails
 set -e
