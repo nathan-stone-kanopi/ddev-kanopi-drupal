@@ -113,7 +113,7 @@ ddev project-init
 
 ### Daily Development
 ```bash
-ddev project-init        # Start your day
+ddev start               # Start your day
 ddev theme-watch         # Begin theme development
 ```
 
