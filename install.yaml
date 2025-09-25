@@ -57,12 +57,12 @@ pre_install_actions:
     # Platform-specific configuration
     if [[ "$HOSTING_PROVIDER" == "pantheon" ]]; then
       # Pantheon uses 'web' as docroot
-      ddev config --docroot=web --database=mariadb:10.6
+      ddev config --database=mariadb:10.6
       echo "✅ Configured docroot for Pantheon (web)"
       echo "✅ Configured DB to MariaDB 10.6"
     elif [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
       # Acquia uses 'docroot' as docroot and apache-fpm webserver
-      ddev config --docroot=docroot --webserver-type=apache-fpm --webserver-type=apache-fpm --database=mysql:5.7
+      ddev config --webserver-type=apache-fpm --database=mysql:5.7
       echo "✅ Configured docroot for Acquia (docroot)"
       echo "✅ Configured webserver for Acquia (apache-fpm)"
       echo "✅ Configured DB to MySQL 5.7"
@@ -73,12 +73,20 @@ pre_install_actions:
 - |
   #ddev-nodisplay
   #ddev-description:Configure platform credentials
+  set +e  # Don't exit on errors in this section
   # Get current hosting provider from config.yaml
-  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
+  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"')
+  if [ -z "$CURRENT_PROVIDER" ]; then
+    CURRENT_PROVIDER="pantheon"
+  fi
+  echo "Current hosting provider: $CURRENT_PROVIDER"
 
   if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
-    # Pantheon - check for TERMINUS_MACHINE_TOKEN
-    if ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    # Check if running in CI environment first
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      echo "CI environment detected, skipping TERMINUS_MACHINE_TOKEN setup"
+      echo "Note: Set TERMINUS_MACHINE_TOKEN globally for Pantheon operations"
+    elif ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
       echo "Using existing TERMINUS_MACHINE_TOKEN."
     else
       printf "\n\n🏛️  Please enter your Pantheon Terminus machine token: "
@@ -88,25 +96,33 @@ pre_install_actions:
       echo "TERMINUS_MACHINE_TOKEN set globally"
     fi
   elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-    # Acquia - check for API credentials
-    if ( {{ contains "ACQUIA_API_KEY" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_KEY" (list .DdevProjectConfig.web_environment | toString) }} ); then
+    # Check if running in CI environment first
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+      echo "CI environment detected, skipping Acquia API setup"
+      echo "Note: Set ACQUIA_API_KEY and ACQUIA_API_SECRET globally for Acquia operations"
+    elif ( {{ contains "ACQUIA_API_KEY" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_KEY" (list .DdevProjectConfig.web_environment | toString) }} ); then
       echo "Using existing ACQUIA_API_KEY."
+      if ( {{ contains "ACQUIA_API_SECRET" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_SECRET" (list .DdevProjectConfig.web_environment | toString) }} ); then
+        echo "Using existing ACQUIA_API_SECRET."
+      else
+        printf "🔐 Please enter your Acquia API Secret: "
+        read api_secret
+        ddev config global --web-environment-add ACQUIA_API_SECRET=${api_secret}
+        echo "ACQUIA_API_SECRET set globally"
+      fi
     else
       printf "\n\n🔷 Please enter your Acquia API Key: "
       read api_key
       ddev config global --web-environment-add ACQUIA_API_KEY=${api_key}
       echo "ACQUIA_API_KEY set globally"
-    fi
-    
-    if ( {{ contains "ACQUIA_API_SECRET" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_SECRET" (list .DdevProjectConfig.web_environment | toString) }} ); then
-      echo "Using existing ACQUIA_API_SECRET."
-    else
+
       printf "🔐 Please enter your Acquia API Secret: "
       read api_secret
       ddev config global --web-environment-add ACQUIA_API_SECRET=${api_secret}
       echo "ACQUIA_API_SECRET set globally"
     fi
   fi
+  set -e  # Re-enable exit on errors
 
 
 # THEME configuration - check if exists
