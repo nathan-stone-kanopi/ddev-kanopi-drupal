@@ -471,7 +471,7 @@ post_install_actions:
   echo ""
   echo "📦 Installed components:"
   echo "   • Enhanced multi-provider support (Pantheon/Acquia) with smart backup management"
-  echo "   • 17 custom commands for Drupal development workflow"
+  echo "   • 27 custom commands for Drupal development workflow"
   
   # Show platform-specific components
   HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
@@ -560,34 +560,35 @@ removal_action:
   echo "🔧 Removing custom commands..."
   
   # Remove host commands
-  rm -f commands/host/cypress 2>/dev/null || true
+  rm -f commands/host/cypress-install 2>/dev/null || true
+  rm -f commands/host/cypress-run 2>/dev/null || true
   rm -f commands/host/cypress-users 2>/dev/null || true
-  rm -f commands/host/init 2>/dev/null || true
-  rm -f commands/host/install-cypress 2>/dev/null || true
-  rm -f commands/host/open 2>/dev/null || true
+  rm -f commands/host/db-rebuild 2>/dev/null || true
+  rm -f commands/host/drupal-uli 2>/dev/null || true
+  rm -f commands/host/pantheon-terminus 2>/dev/null || true
+  rm -f commands/host/pantheon-testenv 2>/dev/null || true
   rm -f commands/host/phpmyadmin 2>/dev/null || true
-  rm -f commands/host/rebuild 2>/dev/null || true
-  rm -f commands/host/refresh 2>/dev/null || true
-  rm -f commands/host/db:rebuild 2>/dev/null || true
-  rm -f commands/host/solrtail.example 2>/dev/null || true
-  rm -f commands/host/testenv 2>/dev/null || true
-  rm -f commands/host/README.txt 2>/dev/null || true
+  rm -f commands/host/project-auth 2>/dev/null || true
+  rm -f commands/host/project-configure 2>/dev/null || true
+  rm -f commands/host/project-init 2>/dev/null || true
+  rm -f commands/host/project-lefthook 2>/dev/null || true
+  rm -f commands/host/project-nvm 2>/dev/null || true
   
   # Remove web commands
-  rm -f commands/web/install-critical-tools 2>/dev/null || true
-  rm -f commands/web/install-theme-tools 2>/dev/null || true
-  rm -f commands/web/migrate-prep-db 2>/dev/null || true
-  rm -f commands/web/npm 2>/dev/null || true
-  rm -f commands/web/npx 2>/dev/null || true
-  rm -f commands/web/db:prep-migrate 2>/dev/null || true
-  rm -f commands/web/theme:npm 2>/dev/null || true
-  rm -f commands/web/theme:npx 2>/dev/null || true
+  rm -f commands/web/critical-install 2>/dev/null || true
+  rm -f commands/web/critical-run 2>/dev/null || true
+  rm -f commands/web/db-prep-migrate 2>/dev/null || true
+  rm -f commands/web/db-refresh 2>/dev/null || true
+  rm -f commands/web/drupal-open 2>/dev/null || true
+  rm -f commands/web/pantheon-tickle 2>/dev/null || true
   rm -f commands/web/recipe-apply 2>/dev/null || true
-  rm -f commands/web/refresh 2>/dev/null || true
-  rm -f commands/web/db:refresh 2>/dev/null || true
-  rm -f commands/web/tickle 2>/dev/null || true
-  rm -f commands/web/uuid-rm 2>/dev/null || true
-  rm -f commands/web/README.txt 2>/dev/null || true
+  rm -f commands/web/recipe-unpack 2>/dev/null || true
+  rm -f commands/web/recipe-uuid-rm 2>/dev/null || true
+  rm -f commands/web/theme-build 2>/dev/null || true
+  rm -f commands/web/theme-install 2>/dev/null || true
+  rm -f commands/web/theme-npm 2>/dev/null || true
+  rm -f commands/web/theme-npx 2>/dev/null || true
+  rm -f commands/web/theme-watch 2>/dev/null || true
   
   echo "✅ Custom commands removed"
   
@@ -608,7 +609,7 @@ removal_action:
   echo ""
   echo "✅ Kanopi Drupal Add-on removed successfully!"
   echo "   • Caching add-ons (Redis/Memcached) and Solr add-ons uninstalled"
-  echo "   • All 17 custom commands removed"
+  echo "   • All 27 custom commands removed"
   echo "   • Platform-specific configurations removed (Nginx/Apache)"
   echo "   • Environment variables preserved (remove manually if needed)"
   echo ""

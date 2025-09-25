@@ -15,27 +15,21 @@ set -e
 green='\033[0;32m'
 yellow='\033[1;33m'
 NC='\033[0m'
-
 divider='===================================================\n'
-construction='\xF0\x9F\x9A\xA7'
-rocket='\xF0\x9F\x9A\x80'
-lightning='\xE2\x9A\xA1'
-
-#-------------------------- Settings --------------------------------
 
 # Define paths using Drupal environment variables
 FULL_THEME_PATH="/var/www/html/${DDEV_DOCROOT}/${THEME}"
 
 #-------------------------- Execution -------------------------------------
 
-# Check if theme directory exists
+# Check if theme directory exists.
 if [ ! -d "$FULL_THEME_PATH" ]; then
     echo -e "\n${yellow}Theme directory not found: $FULL_THEME_PATH${NC}"
     echo -e "Please ensure your theme is located at the correct path or update THEME environment variable in .ddev/.env.web"
     exit 1
 fi
 
-# Check if package.json exists
+# Check if package.json exists.
 if [ ! -f "$FULL_THEME_PATH/package.json" ]; then
     echo -e "\n${yellow}package.json not found in theme directory: $FULL_THEME_PATH${NC}"
     echo -e "Please ensure your theme has a package.json file with npm scripts configured"
@@ -44,11 +38,11 @@ if [ ! -f "$FULL_THEME_PATH/package.json" ]; then
 fi
 
 # Critical CSS message
-echo -e "\n ${lightning} ${yellow} Running Critical CSS generation. ${NC} ${lightning}\n"
+echo -e "⚡ ${yellow} Running Critical CSS generation. ${NC} ⚡"
 echo -e "${green}${divider}${NC}"
 
 # Move to the theme directory
-echo -e "\n ${rocket} ${yellow} Navigating to theme directory: ${FULL_THEME_PATH} ${NC} ${rocket}"
+echo -e "🚀 ${yellow} Navigating to theme directory: ${FULL_THEME_PATH} ${NC} 🚀"
 echo -e "${green}${divider}${NC}"
 cd "$FULL_THEME_PATH"
 
@@ -68,15 +62,15 @@ fi
 
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
-    echo -e "\n ${construction} ${yellow} Installing NPM dependencies... ${NC} ${construction}"
+    echo -e "🚧 ${yellow} Installing NPM dependencies... ${NC} 🚧"
     echo -e "${green}${divider}${NC}"
     npm install
 fi
 
 # Run Critical CSS generation
-echo -e "\n ${construction} ${yellow} Generating Critical CSS... ${NC} ${construction}"
+echo -e "🚧 ${yellow} Generating Critical CSS... ${NC} 🚧"
 echo -e "${green}${divider}${NC}"
 npm run criticalcss
 
-echo -e "\n${yellow}Critical CSS generation completed!${NC}"
+echo -e "${yellow}Critical CSS generation completed!${NC}"
 echo -e "${green}${divider}${NC}"

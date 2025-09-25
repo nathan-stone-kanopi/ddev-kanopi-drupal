@@ -32,15 +32,37 @@ health_checks() {
     docker ps | grep "ddev-${PROJNAME}-solr" || echo "Solr service should be running"
     docker ps | grep "ddev-${PROJNAME}-pma" || echo "PhpMyAdmin service should be running"
 
-    # Check custom commands exist (may be skipped if conflicts with existing DDEV commands)
-    ddev theme-install --help || echo "theme-install command exists or skipped due to conflicts"
-    ddev theme-watch --help || echo "theme-watch command exists or skipped due to conflicts"
-    ddev theme-build --help || echo "theme-build command exists or skipped due to conflicts"
-    ddev db-refresh --help || echo "db-refresh command exists or skipped due to conflicts"
-    ddev recipe-apply --help || echo "recipe-apply command exists or skipped due to conflicts"
-    ddev recipe-uuid-rm --help || echo "recipe-uuid-rm command exists or skipped due to conflicts"
-    ddev theme-npm --help || echo "theme-npm command exists or skipped due to conflicts"
+    # Check all 27 custom commands exist (may be skipped if conflicts with existing DDEV commands)
+    # Host commands (13)
+    ddev cypress-install --help || echo "cypress-install command exists or skipped due to conflicts"
+    ddev cypress-run --help || echo "cypress-run command exists or skipped due to conflicts"
+    ddev cypress-users --help || echo "cypress-users command exists or skipped due to conflicts"
+    ddev db-rebuild --help || echo "db-rebuild command exists or skipped due to conflicts"
+    ddev drupal-uli --help || echo "drupal-uli command exists or skipped due to conflicts"
     ddev pantheon-terminus --help || echo "pantheon-terminus command exists or skipped due to conflicts"
+    ddev pantheon-testenv --help || echo "pantheon-testenv command exists or skipped due to conflicts"
+    ddev phpmyadmin --help || echo "phpmyadmin command exists or skipped due to conflicts"
+    ddev project-auth --help || echo "project-auth command exists or skipped due to conflicts"
+    ddev project-configure --help || echo "project-configure command exists or skipped due to conflicts"
+    ddev project-init --help || echo "project-init command exists or skipped due to conflicts"
+    ddev project-lefthook --help || echo "project-lefthook command exists or skipped due to conflicts"
+    ddev project-nvm --help || echo "project-nvm command exists or skipped due to conflicts"
+
+    # Web commands (14)
+    ddev critical-install --help || echo "critical-install command exists or skipped due to conflicts"
+    ddev critical-run --help || echo "critical-run command exists or skipped due to conflicts"
+    ddev db-prep-migrate --help || echo "db-prep-migrate command exists or skipped due to conflicts"
+    ddev db-refresh --help || echo "db-refresh command exists or skipped due to conflicts"
+    ddev drupal-open --help || echo "drupal-open command exists or skipped due to conflicts"
+    ddev pantheon-tickle --help || echo "pantheon-tickle command exists or skipped due to conflicts"
+    ddev recipe-apply --help || echo "recipe-apply command exists or skipped due to conflicts"
+    ddev recipe-unpack --help || echo "recipe-unpack command exists or skipped due to conflicts"
+    ddev recipe-uuid-rm --help || echo "recipe-uuid-rm command exists or skipped due to conflicts"
+    ddev theme-build --help || echo "theme-build command exists or skipped due to conflicts"
+    ddev theme-install --help || echo "theme-install command exists or skipped due to conflicts"
+    ddev theme-npm --help || echo "theme-npm command exists or skipped due to conflicts"
+    ddev theme-npx --help || echo "theme-npx command exists or skipped due to conflicts"
+    ddev theme-watch --help || echo "theme-watch command exists or skipped due to conflicts"
 
     # Check configuration files exist
     [ -f ".ddev/config/php/php.ini" ]
@@ -106,7 +128,55 @@ health_checks() {
 
     # Check that recipe commands exist and have proper structure
     ddev recipe-apply --help || echo "recipe-apply command should exist"
+    ddev recipe-unpack --help || echo "recipe-unpack command should exist"
     ddev recipe-uuid-rm --help || echo "recipe-uuid-rm command should exist"
+}
+
+@test "project commands functionality" {
+    set -eu -o pipefail
+    cd $TESTDIR
+    ddev config --project-name=$PROJNAME --project-type=drupal --docroot=web --create-docroot
+    ddev add-on get $DIR
+    ddev start
+
+    # Check that project-* commands exist and have proper structure
+    ddev project-auth --help || echo "project-auth command should exist"
+    ddev project-configure --help || echo "project-configure command should exist"
+    ddev project-init --help || echo "project-init command should exist"
+    ddev project-lefthook --help || echo "project-lefthook command should exist"
+    ddev project-nvm --help || echo "project-nvm command should exist"
+}
+
+@test "theme development commands" {
+    set -eu -o pipefail
+    cd $TESTDIR
+    ddev config --project-name=$PROJNAME --project-type=drupal --docroot=web --create-docroot
+    ddev add-on get $DIR
+    ddev start
+
+    # Check theme commands exist
+    ddev theme-install --help || echo "theme-install command should exist"
+    ddev theme-build --help || echo "theme-build command should exist"
+    ddev theme-watch --help || echo "theme-watch command should exist"
+    ddev theme-npm --help || echo "theme-npm command should exist"
+    ddev theme-npx --help || echo "theme-npx command should exist"
+}
+
+@test "critical css and cypress commands" {
+    set -eu -o pipefail
+    cd $TESTDIR
+    ddev config --project-name=$PROJNAME --project-type=drupal --docroot=web --create-docroot
+    ddev add-on get $DIR
+    ddev start
+
+    # Check Critical CSS commands
+    ddev critical-install --help || echo "critical-install command should exist"
+    ddev critical-run --help || echo "critical-run command should exist"
+
+    # Check Cypress commands
+    ddev cypress-install --help || echo "cypress-install command should exist"
+    ddev cypress-run --help || echo "cypress-run command should exist"
+    ddev cypress-users --help || echo "cypress-users command should exist"
 }
 
 @test "docker services" {

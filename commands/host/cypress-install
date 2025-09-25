@@ -7,6 +7,19 @@
 
 #ddev-generated
 
+#-------------------------- Helper functions ------------------------------
+
+green='\033[0;32m'
+yellow='\033[1;33m'
+NC='\033[0m'
+divider='===================================================\n'
+construction='\xF0\x9F\x9A\xA7'
+
+#-------------------------- Execution -------------------------------------
+
+echo -e "🚧 ${yellow} Initializing Cypress...${NC} 🚧"
+echo -e "${green}${divider}${NC}"
+
 # Make sure NVM works
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm

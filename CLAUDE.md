@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a DDEV add-on that provides Kanopi's battle-tested workflow for Drupal development with Pantheon hosting. The add-on includes 17 custom commands, enhanced Pantheon provider integration, and complete tooling for modern Drupal development.
+This is a DDEV add-on that provides Kanopi's battle-tested workflow for Drupal development with multi-provider hosting support. The add-on includes 27 custom commands, enhanced provider integration for Pantheon and Acquia, and complete tooling for modern Drupal development.
 
 ## Architecture
 
@@ -21,10 +21,15 @@ Commands are organized into two categories:
 ## Common Development Commands
 
 ### Essential Commands
-- `ddev project-init`: Complete project initialization with dependencies, Lefthook, NVM, Cypress, and database refresh
-- `ddev db-refresh [env] [-f]`: Smart database refresh from Pantheon with backup age detection (12-hour threshold)
+- `ddev project-init`: Complete project initialization with dependencies, Lefthook, NVM, and database refresh
+- `ddev project-configure`: Interactive configuration wizard for project setup
+- `ddev project-auth`: Authorize SSH keys for hosting providers
+- `ddev project-lefthook`: Install and initialize Lefthook git hooks
+- `ddev project-nvm`: Install NVM and Node.js for theme development
+- `ddev db-refresh [env] [-f]`: Smart database refresh from hosting provider with backup age detection (12-hour threshold)
 - `ddev db-rebuild`: Composer install followed by database refresh
 - `ddev drupal-open`: Open project URL in browser
+- `ddev drupal-uli`: Generate one-time login link for Drupal
 
 ### Development Workflow Commands
 - `ddev theme-install`: Set up Node.js, NPM, and build tools for theme development
@@ -43,6 +48,7 @@ Commands are organized into two categories:
 
 ### Drupal Recipe Commands
 - `ddev recipe-apply <path>`: Apply Drupal recipe with cache management
+- `ddev recipe-unpack <path>`: Unpack and prepare Drupal recipe for development
 - `ddev recipe-uuid-rm <path>`: Remove UUIDs from config files (for recipe development)
 
 ### Migration and Database Commands
@@ -53,28 +59,62 @@ Commands are organized into two categories:
 ### Utility Commands
 - `ddev phpmyadmin`: Launch PhpMyAdmin
 
-## Environment Variables
+## Hosting Provider Support
 
-Key environment variables configured in `.ddev/.env.web`:
+### Pantheon
+- **Recommended Docroot**: `web` (set during `ddev config`)
+- **Environments**: dev, test, live, multidev
+- **Authentication**: Terminus machine token
+- **Database**: Automated backup management with age detection
+
+### Acquia
+- **Recommended Docroot**: `docroot` (set during `ddev config`)
+- **Webserver**: apache-fpm for compatibility
+- **Database**: MySQL 5.7
+- **Authentication**: Acquia API key and secret
+- **File Proxy**: Apache .htaccess-based proxy for missing files
+
+## Configuration System
+
+The add-on uses a simplified configuration approach with provider-specific variables managed through `ddev project-configure`.
+
+### Configuration Storage
+Variables are stored in two locations:
+- **`.ddev/config.yaml`** (web_environment section): For DDEV containers to access via `printenv`
+- **`.ddev/scripts/load-config.sh`**: For command scripts to source directly
+
+### Common Variables (All Providers)
+- `HOSTING_PROVIDER`: Platform identifier (pantheon, acquia)
 - `THEME`: Path to custom theme directory (e.g., `themes/custom/themename`)
 - `THEMENAME`: Theme name for development tools
-- `hostingsite`: Pantheon site identifier
-- `hostingenv`: Current environment (dev, test, live)
-- `MIGRATE_DB_SOURCE`: Source database for migrations
-- `MIGRATE_DB_ENV`: Source environment for migrations
+- `HOSTING_SITE`: Site identifier on hosting platform
+- `HOSTING_ENV`: Default environment for database pulls
 
-Pantheon configuration in `.ddev/providers/pantheon.yaml`:
-```yaml
-environment_variables:
-  project: your-site-name.env
-```
+### Provider-Specific Variables
+
+#### Pantheon Configuration
+- `HOSTING_SITE`: Pantheon site machine name
+- `HOSTING_ENV`: Default environment for database pulls (dev/test/live)
+- `MIGRATE_DB_SOURCE`: Source site for migrations (optional)
+- `MIGRATE_DB_ENV`: Source environment for migrations (optional)
+
+#### Acquia Configuration
+- `HOSTING_SITE`: Acquia application name
+- `HOSTING_ENV`: Default environment for database pulls (dev/stg/prod)
+- `APACHE_FILE_PROXY`: Proxy URL for missing files
+- `ACQUIA_API_KEY`: API key for Acquia Cloud API
+- `ACQUIA_API_SECRET`: API secret for Acquia Cloud API
+
+### Configuration Command
+Use `ddev project-configure` to set up all variables through an interactive wizard that collects only the variables needed for your chosen hosting provider.
 
 ## Smart Refresh System
 
 The `ddev db-refresh` command includes intelligent backup management:
-- Automatically detects backup age (12-hour threshold)
+- **Pantheon**: Automatically detects backup age (12-hour threshold) using Terminus API
+- **Acquia**: Uses Acquia Cloud API for backup retrieval and management
 - Uses `-f` flag to force new backup creation
-- Supports any Pantheon environment (dev, test, live, multidev)
+- Supports any provider environment
 - Includes automatic Cypress user creation after refresh
 
 ## Command Development Guidelines
@@ -155,14 +195,17 @@ bats tests/test.bats --filter "install from directory"
 ## Dependencies
 
 The add-on automatically installs and configures:
-- Lefthook for git hooks
-- NVM for Node.js version management
-- Cypress for E2E testing
-- Terminus for Pantheon API access
-- Theme development tools (Node.js, NPM)
-- Critical CSS generation tools
-- Redis add-on for caching
-- Solr add-on for search functionality
+- **Lefthook** for git hooks
+- **NVM** for Node.js version management
+- **Cypress** for E2E testing
+- **Terminus** for Pantheon API access (when using Pantheon)
+- **Acquia CLI** for Acquia Cloud API access (when using Acquia)
+- **Theme development tools** (Node.js, NPM)
+- **Critical CSS generation tools**
+- **Redis add-on** for caching (Pantheon)
+- **Memcached add-on** for caching (Acquia)
+- **Solr add-on** for search functionality
+- **Multi-provider API tools** for hosting platform integration
 
 ## Cross-Repository Development
 

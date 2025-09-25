@@ -15,13 +15,7 @@ set -e
 green='\033[0;32m'
 yellow='\033[1;33m'
 NC='\033[0m'
-
 divider='===================================================\n'
-construction='\xF0\x9F\x9A\xA7'
-party='\xF0\x9F\x8E\x88 \xF0\x9F\x8E\x89 \xF0\x9F\x8E\x8A'
-reverseparty='\xF0\x9F\x8E\x8A \xF0\x9F\x8E\x89 \xF0\x9F\x8E\x88'
-rocket='\xF0\x9F\x9A\x80'
-shark='\xF0\x9F\xA6\x88'
 
 #-------------------------- Settings --------------------------------
 
@@ -46,11 +40,11 @@ if [ ! -f "$FULL_THEME_PATH/package.json" ]; then
 fi
 
 # Theme build message
-echo -e "\n ${shark} ${yellow} Building production assets for theme. ${NC} ${shark}\n"
+echo -e "🚧 ${yellow} Building production assets for theme. ${NC} 🚧"
 echo -e "${green}${divider}${NC}"
 
 # Move to the theme directory
-echo -e "\n ${rocket} ${yellow} Navigating to theme directory: ${FULL_THEME_PATH} ${NC} ${rocket}"
+echo -e "🚀 ${yellow} Navigating to theme directory: ${FULL_THEME_PATH} ${NC} 🚀"
 echo -e "${green}${divider}${NC}"
 cd "$FULL_THEME_PATH"
 
@@ -70,16 +64,16 @@ fi
 
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
-    echo -e "\n ${construction} ${yellow} Installing NPM dependencies... ${NC} ${construction}"
+    echo -e "🚧 ${yellow} Installing NPM dependencies. ${NC} 🚧"
     echo -e "${green}${divider}${NC}"
     npm install
 fi
 
 # Build production assets
-echo -e "\n ${construction} ${yellow} Building production assets... ${NC} ${construction}"
+echo -e "🚧 ${yellow} Building production assets. ${NC} 🚧"
 echo -e "${green}${divider}${NC}"
 npm run build
 
 # Completion message
-echo -e "\n ${party} ${yellow} Production build completed successfully! ${NC} ${reverseparty}"
+echo -e "🎉 ${yellow} Production build completed successfully! ${NC} 🎉"
 echo -e "${green}${divider}${NC}"
