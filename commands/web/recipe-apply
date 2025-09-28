@@ -11,6 +11,17 @@
 # Abort if anything fails
 set -e
 
+# Check for help flag or no arguments
+if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ -z "$1" ]; then
+    echo -e "\n  📦  Apply a Drupal Recipe."
+    echo -e "\n  🔹  Usage: ddev recipe-apply <recipe-path>"
+    echo -e "\n  📖  Examples:"
+    echo -e "      ddev recipe-apply ../recipes/recipe-name"
+    echo -e "      ddev recipe-apply core/recipes/standard"
+    echo -e "\n  🎯  This command applies a Drupal recipe and clears cache before and after."
+    exit 0
+fi
+
 # Define the Drupal root inside DDEV
 DOCROOT_PATH="/var/www/html/${DDEV_DOCROOT}"
 
@@ -19,7 +30,11 @@ cd "${DOCROOT_PATH}"
 
 # Clear cache before applying the recipe
 echo -e "\n 🧹  Clearing cache before applying recipe."
-drush cr
+if command -v drush &> /dev/null; then
+    drush cr
+else
+    echo "⚠️  Drush not available, skipping cache clear"
+fi
 
 # Apply the recipe
 echo -e "\n 📦  Applying Drupal Recipe: $@"
@@ -27,6 +42,10 @@ php core/scripts/drupal recipe "$@"
 
 # Clear cache again after applying the recipe
 echo -e "\n 🧹  Clearing cache after applying recipe."
-drush cr
+if command -v drush &> /dev/null; then
+    drush cr
+else
+    echo "⚠️  Drush not available, skipping cache clear"
+fi
 
 echo -e "\n ✅  Recipe applied successfully!\n"

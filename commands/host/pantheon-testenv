@@ -19,10 +19,15 @@ divider='===================================================\n'
 
 #-------------------------- Execution -------------------------------------
 
-# Check if at least one argument is provided.
-if [ -z "$1" ]; then
-    echo -e "\n ❌  Usage: ddev pantheon-testenv <environment_name> [optional profile_or_recipe]"
-    exit 1
+# Check for help flag or no arguments
+if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ -z "$1" ]; then
+    echo -e "\n  🚧  Initialize stack and testing environment in DDEV."
+    echo -e "\n  🔹  Usage: ddev pantheon-testenv <environment_name> [optional profile_or_recipe]"
+    echo -e "\n  📖  Example: ddev pantheon-testenv my-env minimal"
+    echo -e "\n  🎯  This command sets up a full testing environment with Cypress,"
+    echo -e "      installs Drupal with the specified profile, and provides login link."
+    echo -e "\n  🏗️  The profile defaults to 'minimal' if not specified."
+    exit 0
 fi
 
 # Set the variables from the inputs.

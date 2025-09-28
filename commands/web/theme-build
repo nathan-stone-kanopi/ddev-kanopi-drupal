@@ -19,6 +19,13 @@ divider='===================================================\n'
 
 #-------------------------- Settings --------------------------------
 
+# Check if THEME environment variable is set
+if [ -z "${THEME}" ]; then
+    echo "❌ THEME environment variable not set."
+    echo "Please run 'ddev project-configure' to set up your theme configuration."
+    exit 1
+fi
+
 # Define paths using Drupal environment variables
 FULL_THEME_PATH="/var/www/html/${DDEV_DOCROOT}/${THEME}"
 

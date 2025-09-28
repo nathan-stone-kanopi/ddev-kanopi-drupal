@@ -19,10 +19,24 @@ divider='===================================================\n'
 
 #-------------------------- Settings --------------------------------
 
+# Check if THEME environment variable is set
+if [ -z "${THEME}" ]; then
+    echo "❌ THEME environment variable not set."
+    echo "Please run 'ddev project-configure' to set up your theme configuration."
+    exit 1
+fi
+
 # Define paths.
 FULL_THEME_PATH="/var/www/html/${DDEV_DOCROOT}/${THEME}"
 
 #-------------------------- Execution -------------------------------------
+
+# Check if theme directory exists
+if [ ! -d "${FULL_THEME_PATH}" ]; then
+    echo "❌ Theme directory not found: ${FULL_THEME_PATH}"
+    echo "Please ensure your theme directory exists or update THEME configuration."
+    exit 1
+fi
 
 # Theme initialization message
 echo -e "🚧 ${yellow} Installing theme development tools. ${NC} 🚧"
@@ -33,6 +47,14 @@ echo -e "🚀 ${yellow} Navigating to theme directory: ${FULL_THEME_PATH} ${NC} 
 echo -e "${green}${divider}${NC}"
 cd "${FULL_THEME_PATH}"
 
+# Check if package.json exists
+if [ ! -f "${FULL_THEME_PATH}/package.json" ]; then
+    echo "❌ No package.json found in theme directory: ${FULL_THEME_PATH}"
+    echo "Please ensure your theme has a package.json file with npm scripts configured"
+    echo "Run ddev theme-install to set up theme development tools first"
+    exit 1
+fi
+
 # Install NPM dependencies
 echo -e "🚧 ${yellow} Installing NPM dependencies. ${NC} 🚧"
 echo -e "${green}${divider}${NC}"
@@ -41,12 +63,16 @@ export NVM_DIR="$HOME/.nvm" || echo "export NVM_DIR=$HOME/.nvm"
 source "$NVM_DIR/nvm.sh" || echo "source $NVM_DIR/nvm.sh"
 echo "NVM version: $(nvm --version)"
 
-# Use Node version specified in .nvmrc
-NODE_VERSION=$(cat "${FULL_THEME_PATH}/.nvmrc")
-echo "Using Node.js version: ${NODE_VERSION}"
-nvm install "${NODE_VERSION}" || echo "nvm install"
-nvm alias default "${NODE_VERSION}" || echo "nvm alias"
-nvm use || echo "nvm use"
+# Use Node version specified in .nvmrc if it exists
+if [ -f "${FULL_THEME_PATH}/.nvmrc" ]; then
+    NODE_VERSION=$(cat "${FULL_THEME_PATH}/.nvmrc")
+    echo "Using Node.js version: ${NODE_VERSION}"
+    nvm install "${NODE_VERSION}" || echo "nvm install"
+    nvm alias default "${NODE_VERSION}" || echo "nvm alias"
+    nvm use || echo "nvm use"
+else
+    echo "No .nvmrc file found, using default Node.js version"
+fi
 npm install --save patch-package || echo "npm install"
 
 # Compile theme assets

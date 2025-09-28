@@ -14,8 +14,28 @@ set -e
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
-cd ${DDEV_APPROOT}/tests/cypress
-nvm use
+CYPRESS_TESTS="tests/cypress"
+
+# Check if cypress directory exists
+if [ ! -d "${DDEV_APPROOT}/${CYPRESS_TESTS}" ]; then
+    echo "❌ Cypress directory not found: ${DDEV_APPROOT}/${CYPRESS_TESTS}"
+    echo "Please run 'ddev cypress-install' first to set up Cypress."
+    exit 0
+fi
+
+cd ${DDEV_APPROOT}/${CYPRESS_TESTS}
+
+# Check if NVM is available and .nvmrc exists
+if command -v nvm &> /dev/null && [ -f ".nvmrc" ]; then
+    nvm use
+fi
+
+# Check if cypress is installed
+if [ ! -f "./node_modules/.bin/cypress" ]; then
+    echo "❌ Cypress not installed in ${CYPRESS_TESTS}"
+    echo "Please run 'ddev cypress-install' first."
+    exit 0
+fi
 
 ENVIRONMENT=${2:-"https://$DDEV_HOSTNAME"}
 

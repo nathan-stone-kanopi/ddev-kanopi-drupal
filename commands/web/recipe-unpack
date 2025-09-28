@@ -25,6 +25,17 @@ DOCROOT_PATH="/var/www/html/${DDEV_DOCROOT}"
 
 #-------------------------- Execution -------------------------------------
 
+# Check for help flag
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo -e "\n  🧳  Unpack a recipe package that's already required in your project."
+    echo -e "\n  🔹  Usage: ddev recipe-unpack [recipe-name]"
+    echo -e "\n  📖  Examples:"
+    echo -e "      ddev recipe-unpack drupal/example_recipe"
+    echo -e "      ddev recipe-unpack (unpacks all recipes)"
+    echo -e "\n  🎯  This command unpacks recipes using Composer and clears cache."
+    exit 0
+fi
+
 # Ensure we're in the correct directory
 cd "${DOCROOT_PATH}"
 
@@ -39,7 +50,11 @@ echo -e "${green}${divider}${NC}"
 # Clear cache before unpacking
 echo -e "\n ${rocket} ${yellow} Clearing cache before unpacking recipe(s) ${NC} ${rocket}"
 echo -e "${green}${divider}${NC}"
-drush cr
+if command -v drush &> /dev/null; then
+    drush cr
+else
+    echo "⚠️  Drush not available, skipping cache clear"
+fi
 
 # Unpack the recipe(s) using Composer
 echo -e "🧳 ${yellow} Unpacking recipe(s) with Composer ${NC} 🧳"
@@ -56,7 +71,11 @@ fi
 # Clear cache after unpacking
 echo -e "🚀 ${yellow} Clearing cache after unpacking recipe(s) ${NC} 🚀"
 echo -e "${green}${divider}${NC}"
-drush cr
+if command -v drush &> /dev/null; then
+    drush cr
+else
+    echo "⚠️  Drush not available, skipping cache clear"
+fi
 
 # Completion message
 echo -e "🎉 ${yellow} Recipe(s) unpacked successfully! ${NC} 🎉"
