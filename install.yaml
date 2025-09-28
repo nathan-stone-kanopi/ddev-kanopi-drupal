@@ -7,7 +7,6 @@ project_files:
 - php/
 - nginx_full/
 
-
 # DDEV version constraint
 ddev_version_constraint: ">= v1.22.0"
 
@@ -19,463 +18,51 @@ pre_install_actions:
   echo ""
   echo "🔧 Configuring Kanopi Drupal Add-on..."
   echo ""
-
-# Platform selection - check if exists
-- |
-  #ddev-nodisplay
-  if ({{ contains "HOSTING_PROVIDER=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing HOSTING_PROVIDER from project config.yaml."
-  else
-    printf "🌐 Select your hosting platform (pantheon/acquia): "
-  fi
-
-# Platform selection - set value
-- |
-  #ddev-nodisplay
-  #ddev-description:Set HOSTING_PROVIDER
-  if !( {{ contains "HOSTING_PROVIDER=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      HOSTING_PROVIDER="pantheon"
-      echo "CI environment detected, using test platform: $HOSTING_PROVIDER"
-    else
-      read HOSTING_PROVIDER
-      if [ -z "$HOSTING_PROVIDER" ]; then
-        HOSTING_PROVIDER="pantheon"
-        echo "⚠️  Using default platform: $HOSTING_PROVIDER"
-      fi
-      # Validate platform choice
-      if [[ "$HOSTING_PROVIDER" != "pantheon" && "$HOSTING_PROVIDER" != "acquia" ]]; then
-        echo "❌ Invalid platform. Please choose 'pantheon' or 'acquia'"
-        exit 1
-      fi
-    fi
-    echo "HOSTING_PROVIDER = '${HOSTING_PROVIDER}'"
-    ddev config --web-environment-add HOSTING_PROVIDER=${HOSTING_PROVIDER}
-    echo "HOSTING_PROVIDER set to ${HOSTING_PROVIDER}"
-    
-    # Platform-specific configuration
-    if [[ "$HOSTING_PROVIDER" == "pantheon" ]]; then
-      # Pantheon uses 'web' as docroot
-      ddev config --database=mariadb:10.6
-      echo "✅ Configured docroot for Pantheon (web)"
-      echo "✅ Configured DB to MariaDB 10.6"
-    elif [[ "$HOSTING_PROVIDER" == "acquia" ]]; then
-      # Acquia uses 'docroot' as docroot and apache-fpm webserver
-      ddev config --webserver-type=apache-fpm --database=mysql:5.7
-      echo "✅ Configured docroot for Acquia (docroot)"
-      echo "✅ Configured webserver for Acquia (apache-fpm)"
-      echo "✅ Configured DB to MySQL 5.7"
-    fi
-  fi
-
-# Platform-specific credentials configuration
-- |
-  #ddev-nodisplay
-  #ddev-description:Configure platform credentials
-  set +e  # Don't exit on errors in this section
-  # Get current hosting provider from config.yaml
-  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"')
-  if [ -z "$CURRENT_PROVIDER" ]; then
-    CURRENT_PROVIDER="pantheon"
-  fi
-  echo "Current hosting provider: $CURRENT_PROVIDER"
-
-  if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
-    # Check if running in CI environment first
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      echo "CI environment detected, skipping TERMINUS_MACHINE_TOKEN setup"
-      echo "Note: Set TERMINUS_MACHINE_TOKEN globally for Pantheon operations"
-    elif ( {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "TERMINUS_MACHINE_TOKEN" (list .DdevProjectConfig.web_environment | toString) }} ); then
-      echo "Using existing TERMINUS_MACHINE_TOKEN."
-    else
-      printf "\n\n🏛️  Please enter your Pantheon Terminus machine token: "
-      read token
-      # Put the token into the global web environment
-      ddev config global --web-environment-add TERMINUS_MACHINE_TOKEN=${token}
-      echo "TERMINUS_MACHINE_TOKEN set globally"
-    fi
-  elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-    # Check if running in CI environment first
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      echo "CI environment detected, skipping Acquia API setup"
-      echo "Note: Set ACQUIA_API_KEY and ACQUIA_API_SECRET globally for Acquia operations"
-    elif ( {{ contains "ACQUIA_API_KEY" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_KEY" (list .DdevProjectConfig.web_environment | toString) }} ); then
-      echo "Using existing ACQUIA_API_KEY."
-      if ( {{ contains "ACQUIA_API_SECRET" (list .DdevGlobalConfig.web_environment | toString) }} || {{ contains "ACQUIA_API_SECRET" (list .DdevProjectConfig.web_environment | toString) }} ); then
-        echo "Using existing ACQUIA_API_SECRET."
-      else
-        printf "🔐 Please enter your Acquia API Secret: "
-        read api_secret
-        ddev config global --web-environment-add ACQUIA_API_SECRET=${api_secret}
-        echo "ACQUIA_API_SECRET set globally"
-      fi
-    else
-      printf "\n\n🔷 Please enter your Acquia API Key: "
-      read api_key
-      ddev config global --web-environment-add ACQUIA_API_KEY=${api_key}
-      echo "ACQUIA_API_KEY set globally"
-
-      printf "🔐 Please enter your Acquia API Secret: "
-      read api_secret
-      ddev config global --web-environment-add ACQUIA_API_SECRET=${api_secret}
-      echo "ACQUIA_API_SECRET set globally"
-    fi
-  fi
-  set -e  # Re-enable exit on errors
-
-
-# THEME configuration - check if exists
-- |
-  #ddev-nodisplay
-  #ddev-description:Set THEME
-  if ({{ contains "THEME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing THEME from project config.yaml."
-  else
-    printf "📁 Enter the path to your active Drupal theme (like 'themes/custom/mytheme'): "
-  fi
-
-# THEME configuration - set value
-- |
-  #ddev-nodisplay  
-  if !( {{ contains "THEME=" (list .DdevProjectConfig.web_environment | toString) }} ); then    
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      THEME_PATH="themes/custom/testtheme"
-      echo "CI environment detected, using test theme path: $THEME_PATH"
-    else
-      read THEME_PATH
-      if [ -z "$THEME_PATH" ]; then
-        THEME_PATH="themes/custom/themename"
-        echo "⚠️  Using default theme path: $THEME_PATH"
-      fi
-    fi
-    echo "THEME = '${THEME_PATH}'"
-    ddev config --web-environment-add THEME=${THEME_PATH}
-    echo "THEME set to ${THEME_PATH}"
-  fi
-
-# THEMENAME configuration - check if exists
-- |
-  #ddev-nodisplay
-  #ddev-description:Set THEMENAME
-  if ({{ contains "THEMENAME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing THEMENAME from project config.yaml."
-  else
-    printf "🎨 Enter your theme name (like 'mytheme'): "
-  fi
-
-# THEMENAME configuration - set value
-- |
-  #ddev-nodisplay
-  if !( {{ contains "THEMENAME=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      THEME_NAME="testtheme"
-      echo "CI environment detected, using test theme name: $THEME_NAME"
-    else
-      read THEME_NAME
-      if [ -z "$THEME_NAME" ]; then
-        THEME_NAME="themename"
-        echo "⚠️  Using default theme name: $THEME_NAME"
-      fi
-    fi
-    echo "THEMENAME = '${THEME_NAME}'"
-    ddev config --web-environment-add THEMENAME=${THEME_NAME}
-    echo "THEMENAME set to ${THEME_NAME}"
-  fi
-
-# HOSTING_SITE configuration - check if exists
-- |
-  #ddev-nodisplay
-  #ddev-description:Set hosting provider project name
-  if ({{ contains "HOSTING_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing HOSTING_SITE from project config.yaml."
-  else
-    # Get current hosting provider from config.yaml
-    CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-    if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
-      printf "🏛️  Enter your Pantheon project machine name (like 'my-site'): "
-    elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-      printf "🔷 Enter your Acquia application name (like 'my-app'): "
-    fi
-  fi
-
-# HOSTING_SITE configuration - set value
-- |
-  #ddev-nodisplay
-  #ddev-description:Set HOSTING_SITE
-  if !( {{ contains "HOSTING_SITE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      HOSTING_SITE="test-site-123"
-      echo "CI environment detected, using test site: $HOSTING_SITE"
-    else
-      read HOSTING_SITE
-      if [ -z "$HOSTING_SITE" ]; then
-        echo "❌ HOSTING_SITE is required for proper functionality"
-        exit 1
-      fi
-    fi
-    echo "HOSTING_SITE = '${HOSTING_SITE}'"
-    ddev config --web-environment-add HOSTING_SITE=${HOSTING_SITE}
-    echo "HOSTING_SITE set to ${HOSTING_SITE}"
-  fi
-
-# HOSTING_ENV configuration - check if exists
-- |
-  #ddev-nodisplay
-  if ({{ contains "HOSTING_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing HOSTING_ENV from project config.yaml."
-  else
-    # Get current hosting provider from config.yaml
-    CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-    if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
-      printf "🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]: "
-    elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-      printf "🌍 Enter default Acquia environment for database pulls (dev/stg/prod) [dev]: "
-    fi
-  fi
-
-# HOSTING_ENV configuration - set value
-- |
-  #ddev-nodisplay
-  #ddev-description:Set HOSTING_ENV
-  if !( {{ contains "HOSTING_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      HOSTING_ENV="dev"
-      echo "CI environment detected, using default environment: $HOSTING_ENV"
-    else
-      read HOSTING_ENV
-      if [ -z "$HOSTING_ENV" ]; then
-        HOSTING_ENV="dev"
-        echo "⚠️  Using default environment: $HOSTING_ENV"
-      fi
-    fi
-    echo "HOSTING_ENV = '${HOSTING_ENV}'"
-    ddev config --web-environment-add HOSTING_ENV=${HOSTING_ENV}
-    echo "HOSTING_ENV set to ${HOSTING_ENV}"
-  fi
-  
-
-- |
-  #ddev-nodisplay
-  #ddev-description:Set APACHE_FILE_PROXY, only for Acquia
-  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  if [[ "$CURRENT_PROVIDER" == "pantheon" ]]; then
-    printf "Skipping, only needed for Acquia"
-  elif [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-    if ({{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-      echo "Using existing APACHE_FILE_PROXY from project config.yaml."
-    else
-      printf "🎨 Enter your proxy URL('https://kanopi.com'): "
-    fi
-  fi
-
-- |
-  #ddev-nodisplay
-  CURRENT_PROVIDER=$(grep "HOSTING_PROVIDER=" .ddev/config.yaml 2>/dev/null | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  if [[ "$CURRENT_PROVIDER" == "acquia" ]]; then
-    if !( {{ contains "APACHE_FILE_PROXY=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-      # Check if running in CI environment
-      if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-        APACHE_FILE_PROXY="https://kanopi.com"
-        echo "CI environment detected, using default environment: $HOSTING_ENV"
-      else
-        read APACHE_FILE_PROXY
-        if [ -z "APACHE_FILE_PROXY" ]; then
-          APACHE_FILE_PROXY="https://kanopi.com"
-          echo "⚠️  Using default environment: $HOSTING_ENV"
-        fi
-      fi
-      echo "APACHE_FILE_PROXY = '${APACHE_FILE_PROXY}'"
-      ddev config --web-environment-add APACHE_FILE_PROXY=${APACHE_FILE_PROXY}
-      echo "APACHE_FILE_PROXY set to ${APACHE_FILE_PROXY}"
-    fi
-  fi
-
-# Optional Migration Configuration intro
-- |
-  #ddev-nodisplay
-  echo ""
-  echo "Optional Migration Configuration:"
-  echo ""
-
-# MIGRATE_DB_SOURCE configuration - check if exists
-- |
-  #ddev-nodisplay
-  if ({{ contains "MIGRATE_DB_SOURCE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing MIGRATE_DB_SOURCE from project config.yaml."
-  else
-    printf "📦 Enter migration source project name (optional): "
-  fi
-
-# MIGRATE_DB_SOURCE configuration - set value
-- |
-  #ddev-nodisplay
-  #ddev-description:Set MIGRATE_DB_SOURCE
-  if !( {{ contains "MIGRATE_DB_SOURCE=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      MIGRATE_SOURCE="test-migration-source"
-      echo "CI environment detected, using test migration source: $MIGRATE_SOURCE"
-      echo "MIGRATE_DB_SOURCE = '${MIGRATE_SOURCE}'"
-      ddev config --web-environment-add MIGRATE_DB_SOURCE=${MIGRATE_SOURCE}
-      echo "MIGRATE_DB_SOURCE set to ${MIGRATE_SOURCE}"
-    else
-      read MIGRATE_SOURCE
-      if [ -n "$MIGRATE_SOURCE" ]; then
-        echo "MIGRATE_DB_SOURCE = '${MIGRATE_SOURCE}'"
-        ddev config --web-environment-add MIGRATE_DB_SOURCE=${MIGRATE_SOURCE}
-        echo "MIGRATE_DB_SOURCE set to ${MIGRATE_SOURCE}"
-      fi
-    fi
-  fi
-
-# MIGRATE_DB_ENV configuration - check if exists
-- |
-  #ddev-nodisplay
-  if ({{ contains "MIGRATE_DB_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    echo "Using existing MIGRATE_DB_ENV from project config.yaml."
-  else
-    printf "🌍 Enter migration source environment (dev/test/live) (optional): "
-  fi
-
-# MIGRATE_DB_ENV configuration - set value
-- |
-  #ddev-nodisplay
-  #ddev-description:Set MIGRATE_DB_ENV
-  if !( {{ contains "MIGRATE_DB_ENV=" (list .DdevProjectConfig.web_environment | toString) }} ); then
-    # Check if running in CI environment
-    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
-      MIGRATE_ENV="live"
-      echo "CI environment detected, using test migration environment: $MIGRATE_ENV"
-      echo "MIGRATE_DB_ENV = '${MIGRATE_ENV}'"
-      ddev config --web-environment-add MIGRATE_DB_ENV=${MIGRATE_ENV}
-      echo "MIGRATE_DB_ENV set to ${MIGRATE_ENV}"
-    else
-      read MIGRATE_ENV
-      if [ -n "$MIGRATE_ENV" ]; then
-        echo "MIGRATE_DB_ENV = '${MIGRATE_ENV}'"
-        ddev config --web-environment-add MIGRATE_DB_ENV=${MIGRATE_ENV}
-        echo "MIGRATE_DB_ENV set to ${MIGRATE_ENV}"
-      fi
-    fi
-  fi
-
-# Configuration complete
-- |
-  #ddev-nodisplay
-  #ddev-description:Configuration complete
-  echo ""
-  echo "✅ Configuration collected successfully"
+  echo "💡 Note: Configuration variables can be set later using 'ddev project-configure'"
   echo ""
 
 # Post-install actions
 post_install_actions:
-# Apply additional configuration and detect Pantheon settings
-- |
-  #ddev-nodisplay
-  #ddev-description: Installing add-ons. This may take a moment as Docker images are downloaded.
-  echo ""  
 
 - |
-  #ddev-nodisplay
-  #ddev-description: Configure platform-specific proxy settings
-  # Get the environment variables from the config file
-  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  HOSTING_SITE_VALUE=$(grep "HOSTING_SITE=" ./config.yaml | sed 's/.*HOSTING_SITE=\([^,]*\).*/\1/' | tr -d '"' || echo "")
-  HOSTING_ENV_VALUE=$(grep "HOSTING_ENV=" ./config.yaml | sed 's/.*HOSTING_ENV=\([^,]*\).*/\1/' | tr -d '"' || echo "")
-  
-  if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
-    echo "🔧 Setting up Nginx proxy configuration for Pantheon..."
-    
-    if [ -n "$HOSTING_SITE_VALUE" ] && [ -n "$HOSTING_ENV_VALUE" ]; then
-      # Configure nginx proxy for Pantheon
-      if [ -f "./nginx_full/nginx-site.conf" ]; then
-        sed -i.bak "s/HOSTING_ENV-HOSTING_SITE/$HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE/g" ./nginx_full/nginx-site.conf
-        sed -i.bak "s/HOSTING_DOMAIN/pantheonsite.io/g" ./nginx_full/nginx-site.conf
-        echo "✅ Updated nginx proxy to redirect to: $HOSTING_ENV_VALUE-$HOSTING_SITE_VALUE.pantheonsite.io"
-        rm -f ./nginx_full/nginx-site.conf.bak
-      fi
-    else
-      echo "⚠️  Could not retrieve HOSTING_SITE and HOSTING_ENV values for nginx configuration"
-    fi
-  elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-    echo "🔧 Acquia uses Apache-FPM, skipping nginx proxy configuration"    
-    rm -rf nginx_full
-    # Add file proxy configuration to .htaccess for Acquia
-    HTACCESS_PATH="../docroot/.htaccess"
-    if [ -f "$HTACCESS_PATH" ]; then
-      # Check if the file proxy rules already exist
-      if ! grep -q "ENV:APACHE_FILE_PROXY" "$HTACCESS_PATH"; then
-        # Create temporary file with new rules at the top
-        TEMP_FILE=$(mktemp)
-        echo "# File proxy DDEV for Acquia" > "$TEMP_FILE"
-        echo "<IfModule mod_rewrite.c>" >> "$TEMP_FILE"
-        echo "    RewriteEngine on" >> "$TEMP_FILE"
-        echo "    RewriteCond %{ENV:APACHE_FILE_PROXY} !^\$" >> "$TEMP_FILE"
-        echo "" >> "$TEMP_FILE"
-        echo "    # Force image styles that have local files that exist to be generated." >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_URI} ^/sites/([^\/]*)/files/styles/[^\/]*/public/((.*))$" >> "$TEMP_FILE"
-        echo "    RewriteCond %{DOCUMENT_ROOT}/sites/%1/files/%2 -f" >> "$TEMP_FILE"
-        echo "    RewriteRule ^(.*)\$ \$1 [QSA,L]" >> "$TEMP_FILE"
-        echo "    # Otherwise, send anything else that's in the files directory to the" >> "$TEMP_FILE"
-        echo "    # production server." >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_URI} ^/sites/[^\/]*/files/.*\$" >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_URI} !^/sites/[^\/]*/files/css/.*\$" >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_URI} !^/sites/[^\/]*/files/js/.*\$" >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_FILENAME} !-f" >> "$TEMP_FILE"
-        echo "    RewriteCond %{REQUEST_FILENAME} !-d" >> "$TEMP_FILE"
-        echo "    RewriteRule ^(.*)\$ %{ENV:APACHE_FILE_PROXY}/\$1 [R=302,L]" >> "$TEMP_FILE"
-        echo "</IfModule>" >> "$TEMP_FILE"
-        echo "" >> "$TEMP_FILE"
-        # Append existing .htaccess content
-        cat "$HTACCESS_PATH" >> "$TEMP_FILE"
-        # Replace original with new content
-        mv "$TEMP_FILE" "$HTACCESS_PATH"
-        echo "✅ Added file proxy configuration to top of .htaccess"
-      else
-        echo "✅ File proxy configuration already exists in .htaccess"
-      fi
-    else
-      echo "⚠️  .htaccess file not found at $HTACCESS_PATH"
-    fi
-  fi
-
-- |
-  #ddev-description: Install caching add-on based on hosting provider
-  # Install provider-specific caching add-on
+  #ddev-description: Install required DDEV add-ons
+  # Install DDEV add-ons with graceful failure handling for CI environments
+  set +e  # Allow commands to fail without stopping the script
   echo ""
-  
-  # Get hosting provider from config
-  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  
-  if [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-    echo "📦 Installing Memcached add-on for Acquia..."
-    ddev add-on get ddev/ddev-memcached
-    echo ""
-    echo "Ignore DDEV Memcached settings file"
-    echo "settings.ddev.memcached.php" >> ../.gitignore
+  echo "📦 Installing Redis add-on..."
+  if ddev add-on get ddev/ddev-redis 2>&1; then
+    echo "✅ Redis add-on installed successfully"
   else
-    echo "📦 Installing Redis add-on for Pantheon..."
-    ddev add-on get ddev/ddev-redis  
-    echo ""
-    echo "Ignore DDEV Redis settings file"
-    echo "settings.ddev.redis.php" >> ../.gitignore
+    echo "⚠️  Redis add-on installation failed (likely GitHub API rate limit in CI)"
+    echo "   You can install it manually later with: ddev add-on get ddev/ddev-redis"
   fi
-- |
-  #ddev-description: Install Solr add-on for search functionality
-  # Install Solr add-on for search functionality
   echo ""
   echo "📦 Installing Solr add-on..."
-  ddev add-on get ddev/ddev-drupal-solr
+  if ddev add-on get ddev/ddev-drupal-solr 2>&1; then
+    echo "✅ Solr add-on installed successfully"
+  else
+    echo "⚠️  Solr add-on installation failed (likely GitHub API rate limit in CI)"
+    echo "   You can install it manually later with: ddev add-on get ddev/ddev-drupal-solr"
+  fi
+  echo ""
+  echo "📦 Installing PhpMyAdmin add-on..."
+  if ddev add-on get ddev/ddev-phpmyadmin 2>&1; then
+    echo "✅ PhpMyAdmin add-on installed successfully"
+  else
+    echo "⚠️  PhpMyAdmin add-on installation failed (likely GitHub API rate limit in CI)"
+    echo "   You can install it manually later with: ddev add-on get ddev/ddev-phpmyadmin"
+  fi
+  set -e  # Re-enable strict error checking
+  echo ""
+  echo "Ignore DDEV add-on settings files"
+  echo "settings.ddev.redis.php" >> ../.gitignore
+  echo "settings.ddev.drupal-solr.php" >> ../.gitignore
+
 - |
   #ddev-description: Setup xdebug output directory
   # Ignore xdebug output folder
   echo ""
-  echo "📦 Ignore xdebug output folder..."
+  echo "📦 Setting up xdebug output directory..."
   mkdir -p ../xdebug
   echo "Output directory for cachegrind files.  See .ddev/config/php_xdebug/xdebug.ini" > ../xdebug/README.md
   echo "xdebug/cachegrind.*" >> ../.gitignore
@@ -488,35 +75,20 @@ post_install_actions:
   echo "📦 Installed components:"
   echo "   • Enhanced multi-provider support (Pantheon/Acquia) with smart backup management"
   echo "   • 27 custom commands for Drupal development workflow"
-  
-  # Show platform-specific components
-  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  if [[ "$HOSTING_PROVIDER_VALUE" == "pantheon" ]]; then
-    echo "   • Nginx proxy configuration so you dont have to download assets locally"
-  elif [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-    echo "   • Apache-FPM webserver configuration for Acquia compatibility"
-  fi
-  
   echo "   • Theme development tools with Node.js/NPM support"
   echo "   • Cypress testing integration"
   echo "   • Drupal Recipe support"
   echo "   • Migration and backup utilities"
-  
-  # Get hosting provider to show correct caching add-on
-  HOSTING_PROVIDER_VALUE=$(grep "HOSTING_PROVIDER=" ./config.yaml | sed 's/.*HOSTING_PROVIDER=\([^,]*\).*/\1/' | tr -d '"' || echo "pantheon")
-  if [[ "$HOSTING_PROVIDER_VALUE" == "acquia" ]]; then
-    echo "   • Memcached add-on installed (Acquia-compatible)"
-  else
-    echo "   • Redis add-on installed (Pantheon-compatible)"
-  fi
-  
+  echo "   • Redis add-on for caching"
   echo "   • Solr add-on with DDEV configuration for search functionality"
+  echo "   • PhpMyAdmin for database administration"
   echo "   • Setup xdebug performance profiling.  Can be switched back to normal debugging as well."
   echo ""
   echo "🔧 Next steps:"
-  echo "   1. Add Solr configuration to your settings.php, if needed (see below)"
-  echo "   2. Run 'ddev restart' to apply configuration changes"
-  echo "   3. Run 'ddev init' to complete project initialization"
+  echo "   1. Run 'ddev project-configure' to set up your hosting provider and variables"
+  echo "   2. Add Solr configuration to your settings.php, if needed (see below)"
+  echo "   3. Run 'ddev restart' to apply configuration changes"
+  echo "   4. Run 'ddev project-init' to complete project initialization"
   echo ""
   echo "🔍 Solr Configuration:"
   echo "   Add this configuration to web/sites/default/settings.php to connect to DDEV Solr."
@@ -549,7 +121,7 @@ removal_action:
   echo ""
   echo "🗑️ Removing Kanopi Drupal Add-on..."
   echo ""
-  
+
   # Remove caching add-ons (both Redis and Memcached)
   echo "📦 Removing caching add-ons..."
   if ddev add-on remove ddev-redis 2>/dev/null; then
@@ -557,13 +129,13 @@ removal_action:
   else
     echo "⚠️ Redis add-on removal failed or not found"
   fi
-  
+
   if ddev add-on remove ddev-memcached 2>/dev/null; then
     echo "✅ Memcached add-on removed successfully"
   else
     echo "⚠️ Memcached add-on removal failed or not found"
   fi
-  
+
   # Remove Solr add-on
   echo "📦 Removing Solr add-on..."
   if ddev add-on remove ddev-drupal-solr 2>/dev/null; then
@@ -571,10 +143,18 @@ removal_action:
   else
     echo "⚠️ Solr add-on removal failed or not found"
   fi
-  
+
+  # Remove PhpMyAdmin add-on
+  echo "📦 Removing PhpMyAdmin add-on..."
+  if ddev add-on remove ddev-phpmyadmin 2>/dev/null; then
+    echo "✅ PhpMyAdmin add-on removed successfully"
+  else
+    echo "⚠️ PhpMyAdmin add-on removal failed or not found"
+  fi
+
   # Remove all custom commands
   echo "🔧 Removing custom commands..."
-  
+
   # Remove host commands
   rm -f commands/host/cypress-install 2>/dev/null || true
   rm -f commands/host/cypress-run 2>/dev/null || true
@@ -589,7 +169,7 @@ removal_action:
   rm -f commands/host/project-init 2>/dev/null || true
   rm -f commands/host/project-lefthook 2>/dev/null || true
   rm -f commands/host/project-nvm 2>/dev/null || true
-  
+
   # Remove web commands
   rm -f commands/web/critical-install 2>/dev/null || true
   rm -f commands/web/critical-run 2>/dev/null || true
@@ -605,26 +185,26 @@ removal_action:
   rm -f commands/web/theme-npm 2>/dev/null || true
   rm -f commands/web/theme-npx 2>/dev/null || true
   rm -f commands/web/theme-watch 2>/dev/null || true
-  
+
   echo "✅ Custom commands removed"
-  
+
   # Remove PHP xdebug file, scripts, and nginx config (if exists)
   rm -f config/php_xdebug/xdebug.ini 2>/dev/null || true
   rm -rf scripts 2>/dev/null || true
   rm -rf ../xdebug 2>/dev/null || true
   rm -rf ../nginx_full 2>/dev/null || true
-  
+
   # Remove any remaining Redis command directories
   rm -rf commands/redis 2>/dev/null || true
-  
+
   # Clean up empty directories
   rmdir commands/host 2>/dev/null || true
   rmdir commands/web 2>/dev/null || true
   rmdir commands 2>/dev/null || true
-  
+
   echo ""
   echo "✅ Kanopi Drupal Add-on removed successfully!"
-  echo "   • Caching add-ons (Redis/Memcached) and Solr add-ons uninstalled"
+  echo "   • Redis, Solr, and PhpMyAdmin add-ons uninstalled"
   echo "   • All 27 custom commands removed"
   echo "   • Platform-specific configurations removed (Nginx/Apache)"
   echo "   • Environment variables preserved (remove manually if needed)"

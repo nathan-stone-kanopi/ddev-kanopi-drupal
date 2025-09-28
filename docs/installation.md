@@ -1,35 +1,73 @@
 # Installation
 
-This guide will help you install the DDEV Kanopi Drupal Add-on for both existing DDEV projects and projects that don't have DDEV yet.
+This guide will help you install the DDEV Kanopi Drupal Add-on. **This add-on requires a DDEV project to be configured first.**
 
 ## Prerequisites
 
 Before installing the add-on, ensure you have:
 
 - [DDEV installed](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/) on your system
+- **An existing DDEV project** configured for your hosting provider
 - A Drupal project (existing or new)
 - Access credentials for your hosting provider (Pantheon or Acquia)
 
-## For Existing DDEV Projects
+## Step 1: Set Up Your DDEV Project
 
-If you already have DDEV set up in your project:
+**Important**: This add-on assumes you have already configured DDEV for your project. Choose your hosting provider setup:
+
+### For Pantheon Projects
 
 ```bash
-# Install the add-on (includes interactive configuration)
+# Clone your Pantheon repository
+git clone git@github.com:pantheon-systems/my-site.git
+cd my-site
+
+# Initialize DDEV with recommended settings for Pantheon
+ddev config --project-type=drupal10 --docroot=web --database=mariadb:10.6
+ddev start
+```
+
+### For Acquia Projects
+
+```bash
+# Clone your Acquia repository
+git clone my-app@svn-123.prod.hosting.acquia.com:my-app.git
+cd my-app
+
+# Initialize DDEV with recommended settings for Acquia
+ddev config --project-type=drupal10 --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
+ddev start
+```
+
+### Alternative: Existing DDEV Projects
+
+If you already have DDEV set up, ensure your configuration matches the requirements:
+
+| Provider | Required Settings |
+|----------|-------------------|
+| **Pantheon** | `--docroot=web --database=mariadb:10.6` |
+| **Acquia** | `--docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7` |
+
+## Step 2: Install the Add-on
+
+Once your DDEV project is properly configured:
+
+```bash
+# Install the add-on (non-interactive installation)
 ddev add-on get kanopi/ddev-kanopi-drupal
 
-# Restart DDEV to apply changes
-ddev restart
+# Configure your hosting provider and project settings
+ddev project-configure
 
-# Initialize your development environment
+# Complete the project initialization
 ddev project-init
 ```
 
-## For Projects Without DDEV
+## Setting Up DDEV from Scratch
 
-If your project doesn't have DDEV yet, follow these steps:
+If you need to set up DDEV for the first time:
 
-### Step 1: Install DDEV
+### Install DDEV
 
 !!! tip "DDEV Installation"
     If DDEV is not already installed on your system, install it first:
@@ -50,7 +88,7 @@ If your project doesn't have DDEV yet, follow these steps:
 === "Linux/Windows"
     Follow the detailed instructions at [ddev.readthedocs.io](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/)
 
-### Step 2: Stop Conflicting Tools
+### Stop Conflicting Tools
 
 !!! warning "Port Conflicts"
     If you're migrating from Docksal or Lando, stop those services first to avoid port conflicts:
@@ -65,75 +103,83 @@ If your project doesn't have DDEV yet, follow these steps:
     lando poweroff
     ```
 
-### Step 3: Initialize DDEV in Your Project
+## Configuration Process
 
-Navigate to your existing project directory and configure DDEV:
+After installing the add-on, use the configuration wizard to set up your hosting provider:
+
+### 1. Run the Configuration Wizard
 
 ```bash
-cd /path/to/your-drupal-project
-
-# Initialize DDEV configuration
-# Match your existing PHP version (8.1, 8.2, 8.3)
-ddev config --project-type=drupal --php-version=8.3
-
-# Install the Kanopi add-on
-ddev add-on get kanopi/ddev-kanopi-drupal
+ddev project-configure
 ```
 
-## Interactive Installation Process
+The wizard will guide you through:
 
-During the add-on installation, you'll be prompted to configure various settings:
-
-### 1. Hosting Provider Selection
+### 2. Hosting Provider Selection
 
 Choose between Pantheon and Acquia:
 ```
-🌐 Select your hosting platform (pantheon/acquia):
+🏛️ Hosting Provider Configuration:
+----------------------------------
+Select your hosting provider:
+  1. pantheon
+  2. acquia
+Select option [1]:
 ```
 
-The add-on will automatically configure:
+The configuration wizard will automatically apply platform-specific settings:
 
 === "Pantheon"
-    - **Docroot**: `web` (Pantheon standard)
-    - **Database**: MariaDB 10.6
-    - **Webserver**: Nginx with proxy configuration
+    - **Database**: MariaDB 10.6 (if not already set)
+    - **Webserver**: Uses default nginx-fpm
+    - **Caching**: Installs Redis add-on
+    - **Proxy**: Configures nginx proxy to pantheonsite.io
 
 === "Acquia"
-    - **Docroot**: `docroot` (Acquia standard)
     - **Database**: MySQL 5.7
-    - **Webserver**: Apache-FPM for compatibility
+    - **Webserver**: Apache-FPM (configured automatically)
+    - **Caching**: Installs Memcached add-on
+    - **Proxy**: Configures Apache file proxy via .htaccess
 
-### 2. Theme Configuration
+### 3. Theme Configuration
 
 Configure your custom theme paths:
 ```
-📁 Enter the path to your active Drupal theme (like 'themes/custom/mytheme'):
-🎨 Enter your theme name (like 'mytheme'):
+🎨 Theme Configuration:
+----------------------
+Theme path (e.g., themes/custom/mytheme):
+Theme name/slug (e.g., mytheme):
 ```
 
-### 3. Hosting Credentials
+### 4. Hosting Site Settings
 
 === "Pantheon"
     ```
-    🏛️  Please enter your Pantheon Terminus machine token:
-    🏛️  Enter your Pantheon project machine name (like 'my-site'):
-    🌍 Enter default Pantheon environment for database pulls (dev/test/live) [dev]:
+    🏛️ Pantheon Configuration:
+    --------------------------
+    Site machine name (e.g., my-site):
+    Default environment (dev/test/live) [dev]:
     ```
 
 === "Acquia"
     ```
-    🔷 Please enter your Acquia API Key:
-    🔐 Please enter your Acquia API Secret:
-    🔷 Enter your Acquia application name (like 'my-app'):
-    🌍 Enter default Acquia environment for database pulls (dev/stg/prod) [dev]:
+    🔷 Acquia Configuration:
+    -----------------------
+    Application name (e.g., my-app):
+    Default environment (dev/stg/prod) [dev]:
+
+    🔗 File Proxy Configuration:
+    Proxy URL for missing files (e.g., https://your-site.com):
     ```
 
-### 4. Optional Migration Settings
+### 5. Optional Migration Settings
 
 For site migrations, you can optionally configure:
 ```
-📦 Enter migration source project name (optional):
-🌍 Enter migration source environment (dev/test/live) (optional):
+🔄 Migration Settings (optional):
+---------------------------------
+Source site for migrations (optional):
+Source environment [live]:
 ```
 
 ## What Gets Installed

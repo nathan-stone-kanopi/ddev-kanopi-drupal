@@ -22,9 +22,6 @@ echo -e "🚀 ${yellow} Initializing the Project.${NC} 🚀"
 echo -e "${green}${divider}${NC}"
 ddev start -y
 
-# Set up NVM.
-ddev project-nvm
-
 # Set up Lefthook.
 ddev project-lefthook
 
@@ -40,6 +37,9 @@ fi
 
 # Get the DB
 ddev db-refresh
+
+# Set up NVM.
+ddev project-nvm
 
 # Install Cypress.
 ddev cypress-install
