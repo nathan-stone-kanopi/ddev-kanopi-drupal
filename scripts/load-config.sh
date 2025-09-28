@@ -6,6 +6,8 @@
 
 #ddev-generated
 
+# Configuration variables can be added here by project-configure command
+
 load_kanopi_config() {
     # Configuration is now handled entirely via environment variables
     # Set defaults for any missing values
@@ -24,7 +26,7 @@ load_kanopi_config() {
     export MIGRATE_DB_ENV=${MIGRATE_DB_ENV:-''}
 
     # Debug output if requested
-    if [ "$KANOPI_CONFIG_DEBUG" = "true" ]; then
+    if [ "${KANOPI_CONFIG_DEBUG:-false}" = "true" ]; then
         echo "Configuration loaded from environment variables:"
         echo "  Theme: $THEMENAME at $THEME"
         echo "  Hosting: $HOSTING_PROVIDER ($HOSTING_SITE.$HOSTING_ENV)"

@@ -215,7 +215,7 @@ teardown() {
     ddev add-on get $DIR
     ddev start
 
-    # Set up Pantheon configuration for testing
+    # Set up Pantheon configuration for testing using project-configure approach
     ddev exec "mkdir -p .ddev/scripts"
     ddev exec "echo 'export HOSTING_PROVIDER=\"pantheon\"' >> .ddev/scripts/load-config.sh"
     ddev exec "echo 'export HOSTING_SITE=\"test-site\"' >> .ddev/scripts/load-config.sh"
@@ -232,7 +232,7 @@ teardown() {
     ddev add-on get $DIR
     ddev start
 
-    # Set up Acquia configuration for testing
+    # Set up Acquia configuration for testing using project-configure approach
     ddev exec "mkdir -p .ddev/scripts"
     ddev exec "echo 'export HOSTING_PROVIDER=\"acquia\"' >> .ddev/scripts/load-config.sh"
     ddev exec "echo 'export HOSTING_SITE=\"test-app\"' >> .ddev/scripts/load-config.sh"
