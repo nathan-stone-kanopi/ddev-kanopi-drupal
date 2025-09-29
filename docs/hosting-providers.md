@@ -6,8 +6,8 @@ The DDEV Kanopi Drupal Add-on provides comprehensive support for multiple hostin
 
 | Provider | Status | Configuration | Webserver | Database | Caching |
 |----------|--------|---------------|-----------|----------|---------|
-| **[Pantheon](providers/pantheon.md)** | ✅ Full Support | Terminus API | Nginx + Proxy | MariaDB 10.6 | Redis |
-| **[Acquia](providers/acquia.md)** | ✅ Full Support | Acquia CLI | Apache-FPM | MySQL 5.7 | Memcached |
+| **Pantheon** | ✅ Full Support | Terminus API | Nginx + Proxy | MariaDB 10.6 | Redis |
+| **Acquia** | ✅ Full Support | Acquia CLI | Apache-FPM | MySQL 5.7 | Memcached |
 
 ## DDEV Configuration Requirements
 
@@ -82,10 +82,15 @@ All supported hosting providers include:
 - **Automated workflows**: Streamlined deployment and backup processes
 - **Environment management**: Create and manage environments programmatically
 
-## Provider-Specific Guides
+## Provider-Specific Configuration
 
-- **[Pantheon Setup Guide](providers/pantheon.md)** - Complete Pantheon configuration
-- **[Acquia Setup Guide](providers/acquia.md)** - Complete Acquia configuration
+For detailed configuration instructions for each provider, use the interactive configuration wizard:
+
+```bash
+ddev project-configure
+```
+
+This will guide you through setting up the appropriate environment variables and hosting provider settings.
 
 ## Multi-Provider Workflows
 

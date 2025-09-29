@@ -34,24 +34,11 @@ nav:
   - Getting Started:
     - Installation: installation.md
     - Configuration: configuration.md
-    - Settings Setup: drupal-settings-setup.md
-  - Commands:
-    - Command Reference: commands.md
-    - Database Operations: database-operations.md
-    - Theme Development: theme-development.md
-    - Recipe Development: recipe-development.md
-    - Testing: testing.md
-  - Hosting Providers:
-    - Provider Setup: hosting-providers.md
-    - Pantheon: providers/pantheon.md
-    - Acquia: providers/acquia.md
+  - Commands: commands.md
+  - Hosting Providers: hosting-providers.md
   - Advanced:
-    - Environment Variables: environment-variables.md
     - Troubleshooting: troubleshooting.md
     - Contributing: contributing.md
-  - Project Integration:
-    - README Updates: readme-updates.md
-    - Creating Pull Requests: pull-requests.md
 
 markdown_extensions:
   - admonition

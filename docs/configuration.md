@@ -334,7 +334,6 @@ Exclude sensitive information:
 
 After configuration:
 
-1. **[Set up Drupal settings](drupal-settings-setup.md)** - Configure Drupal for DDEV
-2. **[Learn about hosting providers](hosting-providers.md)** - Platform-specific guides
-3. **[Explore commands](commands.md)** - Use your configured environment
-4. **[Start theme development](theme-development.md)** - Begin asset compilation
+1. **[Learn about hosting providers](hosting-providers.md)** - Platform-specific guides
+2. **[Explore commands](commands.md)** - Use your configured environment
+3. **Start theme development** - `ddev theme-watch`

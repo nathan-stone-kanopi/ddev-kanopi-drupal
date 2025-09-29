@@ -25,18 +25,46 @@ This add-on provides:
 
 ## Quick Start
 
-Get started with the add-on in just a few steps:
+Get started with the add-on in 4 simple steps:
 
-```bash
-# Install the add-on
-ddev add-on get kanopi/ddev-kanopi-drupal
+### Prerequisites
 
-# Configure your hosting provider and project settings
-ddev project-configure
+First, set up DDEV for your project with the appropriate settings for your hosting provider:
 
-# Initialize your development environment
-ddev project-init
-```
+=== "Pantheon"
+
+    ```bash
+    # Initialize DDEV project for Pantheon
+    ddev config --project-type=drupal --docroot=web --create-docroot
+    ddev start
+    ```
+
+=== "Acquia"
+
+    ```bash
+    # Initialize DDEV project for Acquia
+    ddev config --project-type=drupal --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
+    ddev start
+    ```
+
+### Installation Steps
+
+1. **Add DDEV** (complete the prerequisites above first)
+
+2. **Install the Add-on**
+   ```bash
+   ddev add-on get kanopi/ddev-kanopi-drupal
+   ```
+
+3. **Configure Your Project**
+   ```bash
+   ddev project-configure
+   ```
+
+4. **Initialize Development Environment**
+   ```bash
+   ddev project-init
+   ```
 
 ## Documentation Structure
 
@@ -45,28 +73,16 @@ This documentation is organized into several main sections:
 ### Getting Started
 - **[Installation](installation.md)** - How to install and set up the add-on
 - **[Configuration](configuration.md)** - Configure hosting providers and environment
-- **[Settings Setup](drupal-settings-setup.md)** - Drupal-specific configuration
 
 ### Commands
 - **[Command Reference](commands.md)** - Complete list of all 27 commands
-- **[Database Operations](database-operations.md)** - Smart refresh and migration tools
-- **[Theme Development](theme-development.md)** - Asset compilation and build tools
-- **[Recipe Development](recipe-development.md)** - Drupal 11 recipe creation and management
-- **[Testing](testing.md)** - Cypress E2E and automated testing
 
 ### Hosting Providers
 - **[Provider Setup](hosting-providers.md)** - General hosting provider information
-- **[Pantheon](providers/pantheon.md)** - Pantheon-specific configuration and commands
-- **[Acquia](providers/acquia.md)** - Acquia-specific configuration and commands
 
 ### Advanced Topics
-- **[Environment Variables](environment-variables.md)** - Complete variable reference
 - **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
 - **[Contributing](contributing.md)** - How to contribute to the project
-
-### Project Integration
-- **[README Updates](readme-updates.md)** - Updating project documentation
-- **[Creating Pull Requests](pull-requests.md)** - Best practices for PRs
 
 ## Platform Support
 
@@ -149,5 +165,3 @@ ddev pantheon-tickle              # Keep environment awake during long operation
 1. **[Install the add-on](installation.md)** - Get started with installation
 2. **[Configure your hosting provider](configuration.md)** - Set up Pantheon or Acquia
 3. **[Explore the commands](commands.md)** - Learn about all available commands
-4. **[Set up your theme](theme-development.md)** - Configure asset compilation
-5. **[Try recipe development](recipe-development.md)** - Work with Drupal 11 recipes

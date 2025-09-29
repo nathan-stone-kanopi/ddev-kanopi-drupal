@@ -11,7 +11,11 @@ Before installing the add-on, ensure you have:
 - A Drupal project (existing or new)
 - Access credentials for your hosting provider (Pantheon or Acquia)
 
-## Step 1: Set Up Your DDEV Project
+## Installation Steps
+
+Follow these 4 steps to get up and running:
+
+### Step 1: Set Up Your DDEV Project
 
 **Important**: This add-on assumes you have already configured DDEV for your project. Choose your hosting provider setup:
 
@@ -23,7 +27,7 @@ git clone git@github.com:pantheon-systems/my-site.git
 cd my-site
 
 # Initialize DDEV with recommended settings for Pantheon
-ddev config --project-type=drupal10 --docroot=web --database=mariadb:10.6
+ddev config --project-type=drupal11 --docroot=web --database=mariadb:10.6
 ddev start
 ```
 
@@ -35,7 +39,7 @@ git clone my-app@svn-123.prod.hosting.acquia.com:my-app.git
 cd my-app
 
 # Initialize DDEV with recommended settings for Acquia
-ddev config --project-type=drupal10 --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
+ddev config --project-type=drupal11 --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
 ddev start
 ```
 
@@ -48,18 +52,27 @@ If you already have DDEV set up, ensure your configuration matches the requireme
 | **Pantheon** | `--docroot=web --database=mariadb:10.6` |
 | **Acquia** | `--docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7` |
 
-## Step 2: Install the Add-on
+### Step 2: Install the Add-on
 
 Once your DDEV project is properly configured:
 
 ```bash
-# Install the add-on (non-interactive installation)
 ddev add-on get kanopi/ddev-kanopi-drupal
+```
 
-# Configure your hosting provider and project settings
+### Step 3: Configure Your Project
+
+Run the interactive configuration wizard:
+
+```bash
 ddev project-configure
+```
 
-# Complete the project initialization
+### Step 4: Initialize Development Environment
+
+Complete the project initialization:
+
+```bash
 ddev project-init
 ```
 
@@ -315,6 +328,5 @@ ddev restart
 After successful installation:
 
 1. **[Configure your environment](configuration.md)** - Fine-tune your setup
-2. **[Set up Drupal settings](drupal-settings-setup.md)** - Configure Drupal for DDEV
-3. **[Explore the commands](commands.md)** - Learn about all available commands
-4. **[Start theme development](theme-development.md)** - Set up asset compilation
+2. **[Explore the commands](commands.md)** - Learn about all available commands
+3. **Start theme development** - `ddev theme-watch`

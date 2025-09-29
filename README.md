@@ -35,19 +35,21 @@ ddev config --project-type=drupal11 --docroot=docroot --webserver-type=apache-fp
 ddev start
 ```
 
-### Add-on Installation
-Once your DDEV project is configured:
+### Installation (4 Steps)
 
-```bash
-# Install the add-on
-ddev add-on get kanopi/ddev-kanopi-drupal
-
-# Configure your hosting provider
-ddev project-configure
-
-# Initialize your development environment
-ddev project-init
-```
+1. **Add DDEV** - Complete the prerequisites above first
+2. **Install the Add-on**
+   ```bash
+   ddev add-on get kanopi/ddev-kanopi-drupal
+   ```
+3. **Configure Your Project**
+   ```bash
+   ddev project-configure
+   ```
+4. **Initialize Development Environment**
+   ```bash
+   ddev project-init
+   ```
 
 ## ✨ Features
 
@@ -71,10 +73,6 @@ ddev project-init
 | **[🏁 Getting Started](https://kanopi.github.io/ddev-kanopi-drupal/installation/)** | Installation and setup guide |
 | **[⚙️ Configuration](https://kanopi.github.io/ddev-kanopi-drupal/configuration/)** | Hosting provider setup |
 | **[🛠 Commands](https://kanopi.github.io/ddev-kanopi-drupal/commands/)** | Complete command reference |
-| **[🎨 Theme Development](https://kanopi.github.io/ddev-kanopi-drupal/theme-development/)** | Asset compilation and build tools |
-| **[📦 Recipe Development](https://kanopi.github.io/ddev-kanopi-drupal/recipe-development/)** | Drupal 11 recipe workflows |
-| **[🗄 Database Operations](https://kanopi.github.io/ddev-kanopi-drupal/database-operations/)** | Smart refresh and migrations |
-| **[🧪 Testing](https://kanopi.github.io/ddev-kanopi-drupal/testing/)** | Cypress E2E and automated testing |
 | **[☁️ Hosting Providers](https://kanopi.github.io/ddev-kanopi-drupal/hosting-providers/)** | Platform-specific guides |
 | **[🔧 Troubleshooting](https://kanopi.github.io/ddev-kanopi-drupal/troubleshooting/)** | Common issues and solutions |
 

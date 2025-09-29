@@ -317,7 +317,4 @@ ddev theme-install --help
 
 ## Next Steps
 
-- **[Database Operations](database-operations.md)** - Learn more about database management
-- **[Theme Development](theme-development.md)** - Deep dive into theme tools
-- **[Recipe Development](recipe-development.md)** - Master Drupal recipe workflow
-- **[Testing](testing.md)** - Set up comprehensive testing
+For detailed information on database operations, theme development, recipe workflow, and testing, refer to the individual command documentation and help text using `ddev [command] --help`.
