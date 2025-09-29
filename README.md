@@ -20,7 +20,7 @@ git clone git@github.com:pantheon-systems/my-site.git
 cd my-site
 
 # Initialize DDEV with recommended settings for Pantheon
-ddev config --project-type=drupal11 --docroot=web --database=mariadb:10.6
+ddev config --project-type=drupal --docroot=web --database=mariadb:10.6
 ddev start
 ```
 
@@ -31,7 +31,7 @@ git clone my-app@svn-123.prod.hosting.acquia.com:my-app.git
 cd my-app
 
 # Initialize DDEV with recommended settings for Acquia
-ddev config --project-type=drupal11 --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
+ddev config --project-type=drupal --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
 ddev start
 ```
 
