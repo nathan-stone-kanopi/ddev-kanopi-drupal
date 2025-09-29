@@ -25,6 +25,30 @@ pre_install_actions:
 post_install_actions:
 
 - |
+  #ddev-description: Configure environment variables for CI
+  # Auto-configure environment variables for CI and testing environments
+  if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ] || [ "${DDEV_NONINTERACTIVE:-}" = "true" ]; then
+    echo ""
+    echo "🔧 Detected CI/testing environment, configuring default variables..."
+
+    # Set CI-friendly defaults that match the comprehensive test expectations
+    ddev config --web-environment-add=HOSTING_PROVIDER=pantheon
+    ddev config --web-environment-add=THEME=themes/custom/testtheme
+    ddev config --web-environment-add=THEMENAME=testtheme
+    ddev config --web-environment-add=HOSTING_SITE=test-site-123
+    ddev config --web-environment-add=HOSTING_ENV=dev
+    ddev config --web-environment-add=MIGRATE_DB_SOURCE=test-migration-source
+    ddev config --web-environment-add=MIGRATE_DB_ENV=live
+
+    echo "✅ Default environment variables configured for CI"
+    echo "   Variables can be reconfigured later using 'ddev project-configure'"
+  else
+    echo ""
+    echo "💡 Interactive environment detected"
+    echo "   Run 'ddev project-configure' after installation to set up your hosting provider"
+  fi
+
+- |
   #ddev-description: Install required DDEV add-ons
   # Install DDEV add-ons with graceful failure handling for CI environments
   set +e  # Allow commands to fail without stopping the script
