@@ -55,7 +55,7 @@ if [ "$HOSTING_PROVIDER" = "acquia" ]; then
 fi
 
 # Log in.
-ddev drush-uli
+ddev drupal-uli
 
 # Complete.
 echo -e "🎉 ${yellow} Build complete!!!${NC} 🎉"

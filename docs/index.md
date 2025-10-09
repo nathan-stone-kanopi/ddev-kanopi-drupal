@@ -23,145 +23,151 @@ This add-on provides:
 - **Services Integration**: PHPMyAdmin, Redis/Memcached, and Solr via official DDEV add-ons
 - **Environment Configuration**: Clean configuration system using environment variables
 
+## Prerequisites
+
+### Install DDEV and Docker Desktop
+
+First, install DDEV on your system. Follow installation instructions at: [https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/](https://ddev.readthedocs.io/en/stable/users/install/ddev-installation/)
+
+The most common installation for macOS is to use Homebrew.
+
+```bash
+# Install DDEV
+brew install ddev/ddev/ddev
+
+# One-time initialization of mkcert
+mkcert -install
+```
+
+If you have Docksal or Lando running, stop them to avoid port conflicts. This is not required as DDEV will find other ports if the primary ports are busy.
+
+```bash
+# Stop Docksal
+fin system stop
+# Stop Lando
+lando poweroff
+```
+
+### Set Up Hosting Provider Authentication
+
+#### Pantheon
+
+```bash
+# Set your Pantheon machine token globally
+ddev config global --web-environment-add=TERMINUS_MACHINE_TOKEN=your_token_here
+```
+
+Get your token: [https://dashboard.pantheon.io/machine-token/create](https://dashboard.pantheon.io/machine-token/create)
+
+#### Acquia
+
+```bash
+# Set your Acquia API credentials globally
+ddev config global --web-environment-add=ACQUIA_API_KEY=your_api_key_here
+ddev config global --web-environment-add=ACQUIA_API_SECRET=your_api_secret_here
+```
+
+Get your credentials: [https://cloud.acquia.com/a/profile/tokens](https://cloud.acquia.com/a/profile/tokens)
+
+---
+
 ## Quick Start
 
-Get started with the add-on in 4 simple steps:
+- **[Adding DDEV and this add-on](#adding-ddev-and-this-add-on)** - Set up DDEV and this add-on for a brand new local environment
+- **[New to this project?](#new-to-this-project)** - Clone and start developing on a project that already uses this add-on
 
-### Prerequisites
+## Adding DDEV and this add-on
 
-First, set up DDEV for your project with the appropriate settings for your hosting provider:
+You're setting up a DDEV local development environment for the first time. If you already have DDEV configured on your project, skip to Step 2.
 
-=== "Pantheon"
 
-    ```bash
-    # Initialize DDEV project for Pantheon
-    ddev config --project-type=drupal --docroot=web --create-docroot
-    ddev start
-    ```
+### 1. Configure DDEV
 
-=== "Acquia"
+In the root of your project, initialize DDEV with provider-specific settings:
 
-    ```bash
-    # Initialize DDEV project for Acquia
-    ddev config --project-type=drupal --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
-    ddev start
-    ```
-
-### Installation Steps
-
-1. **Add DDEV** (complete the prerequisites above first)
-
-2. **Install the Add-on**
-   ```bash
-   ddev add-on get kanopi/ddev-kanopi-drupal
-   ```
-
-3. **Configure Your Project**
-   ```bash
-   ddev project-configure
-   ```
-
-4. **Initialize Development Environment**
-   ```bash
-   ddev project-init
-   ```
-
-## Documentation Structure
-
-This documentation is organized into several main sections:
-
-### Getting Started
-- **[Installation](installation.md)** - How to install and set up the add-on
-- **[Configuration](configuration.md)** - Configure hosting providers and environment
-
-### Commands
-- **[Command Reference](commands.md)** - Complete list of all 27 commands
-
-### Hosting Providers
-- **[Provider Setup](hosting-providers.md)** - General hosting provider information
-
-### Advanced Topics
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
-- **[Contributing](contributing.md)** - How to contribute to the project
-
-## Platform Support
-
-### Pantheon Integration
-- **Nginx Configuration**: Automatic proxy setup for missing assets
-- **Terminus Integration**: Full Pantheon API access with machine token authentication
-- **Smart Backups**: 12-hour backup age detection with automatic refresh
-- **Redis Caching**: Optimized object caching for Pantheon environments
-- **Multidev Support**: Work with any Pantheon environment including multidevs
-
-### Acquia Integration
-- **Apache-FPM Configuration**: Native Apache setup matching Acquia Cloud
-- **Acquia CLI Integration**: Full Acquia Cloud API access
-- **File Proxy**: Apache .htaccess-based proxy for missing files
-- **Memcached Caching**: Optimized caching for Acquia environments
-- **Multi-database Support**: Handle complex Acquia database setups
-
-## Architecture Overview
-
-The add-on is built around a modular architecture with clear separation between host and web commands:
-
-### Command Structure
-- **Host Commands (13)**: Execute on the host system outside containers
-- **Web Commands (14)**: Execute inside the DDEV web container
-
-### Configuration System
-- **Environment Variables**: Stored in `.ddev/config.yaml` for container access
-- **Script Configuration**: Shared configuration via `.ddev/scripts/load-config.sh`
-- **Provider-Specific**: Separate configuration paths for Pantheon and Acquia
-
-### Smart Refresh System
-- **Pantheon**: Uses Terminus API for backup age detection and download
-- **Acquia**: Uses Acquia CLI for database synchronization
-- **Automatic Detection**: 12-hour threshold for forcing new backups
-- **Post-refresh Actions**: Automatic user creation and cache clearing
-
-## Quick Reference
-
-### Daily Development Workflow
+#### Pantheon
 ```bash
-# Start your development day
-ddev project-init                 # Initialize everything
-
-# Or run individual commands
-ddev start                        # Start DDEV
-ddev db-refresh                   # Get latest database
-ddev theme-install                # Set up theme tools (first time)
-ddev theme-watch                  # Start theme development
+# Configure for Pantheon
+ddev config --project-type=drupal11 --docroot=web --database=mariadb:10.6
+ddev start
 ```
 
-### Testing Workflow
+#### Acquia
 ```bash
-# Set up testing environment
-ddev cypress-install              # Install Cypress (first time)
-ddev cypress-users                # Create test users
-ddev cypress-run open             # Open Cypress UI
-
-# Or run headless tests
-ddev cypress-run run              # Run all tests
+# Configure for Acquia
+ddev config --project-type=drupal11 --docroot=docroot --webserver-type=apache-fpm --database=mysql:5.7
+ddev start
 ```
 
-### Recipe Development
+### 2. Install the Add-on
+
 ```bash
-# Work with Drupal recipes
-ddev recipe-apply ../recipes/my-recipe     # Apply a recipe
-ddev recipe-unpack drupal/example_recipe   # Unpack packaged recipe
-ddev recipe-uuid-rm config/sync            # Clean UUIDs for development
+ddev add-on get kanopi/ddev-kanopi-drupal
 ```
 
-### Database & Migration
+### 3. Review local development customizations
+
+This add-on was created from our standard drupal-starter. If your project has different or custom command, environment variables, or configuration, identify and replicate at this point in DDEV.
+
+Common customizations needed here are:
+
+* settings.php
+* Theme installation/build/watch commands
+* Solr settings
+
+See [custom-configuration.md](custom-configuration.md) for common scenarios.
+
+If you do change any files provided by the add-on, remove the #ddev-generate comment from the file.  This will make it a custom file and won't be touched if you update or remove the add-on.
+
+### 4. Configure Your Project
+
+Run the interactive configuration wizard:
+
 ```bash
-# Database operations
-ddev db-refresh live -f           # Force refresh from live environment
-ddev db-prep-migrate               # Set up secondary database for migrations
-ddev pantheon-tickle              # Keep environment awake during long operations
+ddev project-configure
 ```
 
-## Next Steps
+### 5. Initialize Your Environment
 
-1. **[Install the add-on](installation.md)** - Get started with installation
-2. **[Configure your hosting provider](configuration.md)** - Set up Pantheon or Acquia
-3. **[Explore the commands](commands.md)** - Learn about all available commands
+```bash
+# Install dependencies, pull database, set up development tools
+ddev project-init
+```
+
+---
+
+## New to this Project
+
+If you're joining a project that already uses this add-on, you just need to clone it and run project-init. Use this section to add to your project's README.md for local development.  You can also grab the commands from the commands.md
+
+### Step 1: Clone and Start
+
+```bash
+# Clone the project repository
+git clone <repository-url>
+cd <project-directory>
+
+# Start DDEV
+ddev start
+```
+
+### Step 3: Initialize Your Environment
+
+```bash
+# Pull database, install dependencies, set up tools
+ddev project-init
+```
+
+### You're Done!
+
+Start developing:
+```bash
+# Open the site
+ddev launch
+
+# Watch theme files for changes
+ddev theme-watch
+
+# Generate a login link
+ddev drupal-uli
+```

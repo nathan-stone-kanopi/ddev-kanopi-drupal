@@ -145,103 +145,15 @@ set -e
 
 ## Installation and Setup
 
-### Prerequisites
-This add-on assumes you already have a DDEV project configured. If you don't have one yet, set it up first:
+### Quick Start
+The installation process varies based on your situation. See the main documentation index (`docs/index.md`) for detailed setup instructions covering:
 
-#### For Pantheon Projects
-```bash
-# Clone your Pantheon repository
-git clone git@github.com:pantheon-systems/my-site.git
-cd my-site
-
-# Initialize DDEV with recommended settings for Pantheon
-ddev config --project-type=drupal10 --docroot=web --create-docroot
-ddev start
-```
-
-#### For Acquia Projects
-```bash
-# Clone your Acquia repository
-git clone my-app@svn-123.prod.hosting.acquia.com:my-app.git
-cd my-app
-
-# Initialize DDEV with recommended settings for Acquia
-ddev config --project-type=drupal10 --docroot=docroot --create-docroot
-ddev start
-```
-
-### Add-on Installation
-Once your DDEV project is set up:
-
-```bash
-# Install the Kanopi Drupal add-on
-ddev add-on get kanopi/ddev-kanopi-drupal
-
-# Configure your hosting provider and project settings
-ddev project-configure
-
-# Complete the project initialization
-ddev project-init
-```
-
-### Local Development
-```bash
-# Test add-on installation from local directory
-ddev add-on get /path/to/ddev-kanopi-drupal
-
-# Test removal
-ddev add-on remove kanopi-drupal
-```
-
-### Configuration Examples
-
-#### Example: Pantheon Project Configuration
-```bash
-# Run the configuration wizard
-ddev project-configure
-
-# Select hosting provider: pantheon
-# Site machine name: my-site
-# Default environment: dev
-# Theme path: themes/custom/mytheme
-# Theme name: mytheme
-```
-
-This creates the following environment variables in `.ddev/config.yaml`:
-```yaml
-web_environment:
-  - HOSTING_PROVIDER=pantheon
-  - HOSTING_SITE=my-site
-  - HOSTING_ENV=dev
-  - THEME=themes/custom/mytheme
-  - THEMENAME=mytheme
-```
-
-#### Example: Acquia Project Configuration
-```bash
-# Run the configuration wizard
-ddev project-configure
-
-# Select hosting provider: acquia
-# Application name: my-app
-# Default environment: dev
-# Proxy URL: https://my-site.com
-# Theme path: themes/custom/mytheme
-# Theme name: mytheme
-```
-
-This creates the following environment variables in `.ddev/config.yaml`:
-```yaml
-web_environment:
-  - HOSTING_PROVIDER=acquia
-  - HOSTING_SITE=my-app
-  - HOSTING_ENV=dev
-  - APACHE_FILE_PROXY=https://my-site.com
-  - THEME=themes/custom/mytheme
-  - THEMENAME=mytheme
-```
+1. **Adding DDEV and this add-on** - Setting up from scratch
+2. **New to this project** - Joining a project that already uses this add-on
 
 ### Authentication Setup
+
+Global authentication credentials are required for hosting provider API access:
 
 #### Pantheon Authentication
 ```bash
@@ -257,6 +169,31 @@ ddev config global --web-environment-add=ACQUIA_API_KEY=your_api_key
 ddev config global --web-environment-add=ACQUIA_API_SECRET=your_api_secret
 ```
 Get credentials at: https://cloud.acquia.com/a/profile/tokens
+
+### Basic Installation Flow
+```bash
+# 1. Configure DDEV (Pantheon example)
+ddev config --project-type=drupal11 --docroot=web --database=mariadb:10.6
+ddev start
+
+# 2. Install the add-on
+ddev add-on get kanopi/ddev-kanopi-drupal
+
+# 3. Configure your project
+ddev project-configure
+
+# 4. Initialize
+ddev project-init
+```
+
+### Local Development Testing
+```bash
+# Test add-on installation from local directory
+ddev add-on get /path/to/ddev-kanopi-drupal
+
+# Test removal
+ddev add-on remove kanopi-drupal
+```
 
 ### Testing Framework
 The project includes comprehensive testing:
