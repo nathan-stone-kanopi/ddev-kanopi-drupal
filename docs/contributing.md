@@ -104,7 +104,7 @@ The add-on uses a three-tier configuration system:
 When adding new configuration:
 - Update `install.yaml` for interactive prompts
 - Update `load-config.sh` for script access
-- Update documentation in `docs/environment-variables.md`
+- Update documentation in `docs/getting-started.md`
 
 ### Testing
 
@@ -177,7 +177,7 @@ For significant changes, create an issue first to discuss:
 
 4. **Update documentation**:
    - Update `docs/commands.md` for new commands
-   - Update `docs/configuration.md` for new variables
+   - Update `docs/getting-started.md` for new setup steps or variables
    - Update `README.md` if needed
    - Add troubleshooting entries if applicable
 

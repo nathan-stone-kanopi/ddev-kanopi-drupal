@@ -31,11 +31,8 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting Started:
-    - Installation: installation.md
-    - Configuration: configuration.md
   - Commands: commands.md
-  - Hosting Providers: hosting-providers.md
+  - Custom Configuration: custom-configuration.md
   - Advanced:
     - Troubleshooting: troubleshooting.md
     - Contributing: contributing.md
